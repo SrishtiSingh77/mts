@@ -1,19 +1,15 @@
 "use client";
 
+import { HelpCircle, Link2, PanelsTopLeft, Play } from "lucide-react";
 import Link from "next/link";
-import { ChevronRight, HelpCircle, Layers } from "lucide-react";
+import { useState } from "react";
+
 import { Form } from "@/types";
 
-export const BUILDER_TABS = [
-  "Content",
-  "Workflow",
-  "Connect",
-  "Share",
-  "Settings",
-  "Results",
-] as const;
+/** Tabs shown in the strip. Settings is reachable from the toolbar gear, as in Typeform. */
+export const BUILDER_TABS = ["Content", "Workflow", "Connect", "Share", "Results"] as const;
 
-export type BuilderTab = (typeof BUILDER_TABS)[number];
+export type BuilderTab = (typeof BUILDER_TABS)[number] | "Settings";
 
 interface BuilderHeaderProps {
   form: Form;
@@ -28,68 +24,87 @@ export default function BuilderHeader({
   setActiveTab,
   onTitleChange,
 }: BuilderHeaderProps) {
+  const [draftTitle, setDraftTitle] = useState(form.title);
+
   return (
-    <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 select-none z-20">
-      {/* Left side: Breadcrumb & Form Title */}
-      <div className="flex items-center space-x-2">
-        <Link href="/" className="text-xs font-semibold text-gray-500 hover:text-gray-900 flex items-center space-x-1">
-          <Layers className="w-3.5 h-3.5" />
+    <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center justify-between bg-white px-6">
+      {/* Breadcrumb — the title is edited inline here */}
+      <div className="flex min-w-0 items-center gap-2">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-[15px] font-medium text-ink transition-opacity hover:opacity-70"
+        >
+          <PanelsTopLeft className="h-[18px] w-[18px]" />
           <span>Forms</span>
         </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+        <span className="text-muted">›</span>
         <input
           type="text"
-          value={form.title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          className="text-xs font-bold text-gray-900 bg-transparent border border-transparent hover:border-gray-200 focus:border-purple-500 rounded px-1.5 py-1 focus:outline-none transition-all"
+          value={draftTitle}
+          onChange={(event) => {
+            setDraftTitle(event.target.value);
+            onTitleChange(event.target.value);
+          }}
+          className="min-w-0 max-w-[280px] truncate rounded-md border border-transparent px-1.5 py-1 text-[15px] font-medium text-ink transition-colors hover:border-[#c9c9cf] focus:border-ink focus:outline-none"
         />
       </div>
 
-      {/* Center Tabs: Content / Workflow / Connect / Share / Results */}
-      <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
-        {BUILDER_TABS.map((tab) => (
+      {/* Centre tab strip — active tab gets a pill plus a bar on the very top edge */}
+      <nav className="absolute left-1/2 top-0 flex -translate-x-1/2 items-center gap-1 pt-[18px]">
+        {BUILDER_TABS.map((tab) => {
+          const isActive = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="relative px-1"
+            >
+              {isActive && (
+                <span className="absolute -top-[18px] left-1/2 h-[3px] w-12 -translate-x-1/2 rounded-full bg-ink" />
+              )}
+              <span
+                className={`block rounded-lg px-3.5 py-1.5 text-[15px] transition-colors ${
+                  isActive ? "bg-black/[0.05] text-ink" : "text-muted hover:text-ink"
+                }`}
+              >
+                {tab}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="flex items-center gap-4">
+        {activeTab === "Share" ? (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-              activeTab === tab
-                ? "bg-white text-gray-900 shadow-2xs"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
+            aria-label="Copy public link"
+            className="rounded-lg border border-hair p-2 text-ink transition-colors hover:bg-panel"
           >
-            {tab}
+            <Link2 className="h-[18px] w-[18px]" />
           </button>
-        ))}
-      </div>
+        ) : (
+          <button
+            onClick={() => setActiveTab("Share")}
+            className="flex items-center gap-2 rounded-lg border border-hair px-3.5 py-2 text-[15px] text-ink transition-colors hover:bg-panel"
+          >
+            <Play className="h-[16px] w-[16px]" />
+            <span>Share</span>
+          </button>
+        )}
 
-      {/* Right side buttons */}
-      <div className="flex items-center space-x-3">
-        <span
-          className={`inline-flex items-center space-x-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            form.status === "published"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border border-amber-200 bg-amber-50 text-amber-700"
-          }`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              form.status === "published" ? "bg-emerald-500" : "bg-amber-500"
-            }`}
-          />
-          <span className="capitalize">{form.status}</span>
-        </span>
+        <span className="h-6 w-px bg-hair" />
 
-        <button className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-colors">
+        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover">
           View plans
         </button>
 
-        <button className="text-gray-400 hover:text-gray-600 p-1 rounded-md">
-          <HelpCircle className="w-4 h-4" />
+        <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
+          <HelpCircle className="h-[22px] w-[22px]" />
         </button>
 
-        <div className="w-7 h-7 rounded-full bg-amber-200 text-amber-900 font-semibold text-xs flex items-center justify-center border border-amber-300">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0d9a8] text-[13px] font-medium text-[#7a5c1e]">
           SS
-        </div>
+        </span>
       </div>
     </header>
   );
