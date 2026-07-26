@@ -1,24 +1,46 @@
 @import "tailwindcss";
 
+/* Palette sampled from the reference screenshots in public/assets. */
+@theme {
+  --color-ink: #262627; /* respondent text, canvas dark */
+  --color-chrome: #2f2a33; /* app chrome buttons: Create form, Add content */
+  --color-chrome-hover: #1f1c23;
+  --color-brand-green: #12705e; /* View plans, Upgrade plan */
+  --color-brand-green-hover: #0d5b4c;
+  --color-muted: #6e6e73; /* secondary labels */
+  --color-faint: #9a9aa0; /* placeholders, disabled */
+  --color-hair: #e6e6e8; /* borders */
+  --color-panel: #f4f4f5; /* builder sidebar panels */
+  --color-canvas: #fbfbfb; /* app page background */
+  --color-stage: #f9f9f9; /* respondent background */
+  --color-chip: #dfe2fb; /* question-type icon chips */
+  --color-chip-ink: #3b3b6d;
+
+  --font-sans: var(--font-dm-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 :root {
-  --background: #fcfcfc;
-  --foreground: #191919;
-  --primary: #262627;
-  --accent-purple: #7c3aed;
-  --accent-green: #047857;
-  --border-light: #e5e7eb;
+  --background: #fbfbfb;
+  --foreground: #262627;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
 }
 
-/* Scrollbar styling */
+/* Typeform sets headings at normal weight and relies on size for hierarchy. */
+h1,
+h2,
+h3 {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -27,19 +49,30 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #a1a1aa;
 }
 
-/* Custom Typeform animation classes */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Respondent answer fields: a single hairline that thickens to the theme accent on focus. */
+.tf-underline {
+  border-bottom: 2px solid var(--color-ink);
+  transition: border-color 0.15s ease;
 }
