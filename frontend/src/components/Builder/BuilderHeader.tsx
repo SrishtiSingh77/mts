@@ -1,9 +1,10 @@
 "use client";
 
-import { HelpCircle, Link2, PanelsTopLeft, Play } from "lucide-react";
+import { Check, HelpCircle, Link2, PanelsTopLeft, Play } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { useToast } from "@/components/ToastProvider";
 import { Form } from "@/types";
 
 /** Tabs shown in the strip. Settings is reachable from the toolbar gear, as in Typeform. */
@@ -25,6 +26,19 @@ export default function BuilderHeader({
   onTitleChange,
 }: BuilderHeaderProps) {
   const [draftTitle, setDraftTitle] = useState(form.title);
+  const [copied, setCopied] = useState(false);
+  const toast = useToast();
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/f/${form.share_id}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    if (form.status === "published") {
+      toast.success("Shareable link copied to clipboard");
+    } else {
+      toast.info("Link copied — publish the form before sharing it.");
+    }
+  };
 
   return (
     <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center justify-between bg-white px-6">
@@ -77,10 +91,16 @@ export default function BuilderHeader({
       <div className="flex items-center gap-4">
         {activeTab === "Share" ? (
           <button
+            onClick={handleCopyLink}
             aria-label="Copy public link"
-            className="rounded-lg border border-hair p-2 text-ink transition-colors hover:bg-panel"
+            title="Copy the public link"
+            className="rounded-lg border border-hair p-2 text-ink transition-colors hover:bg-panel active:scale-95"
           >
-            <Link2 className="h-[18px] w-[18px]" />
+            {copied ? (
+              <Check className="h-[18px] w-[18px] text-brand-green" />
+            ) : (
+              <Link2 className="h-[18px] w-[18px]" />
+            )}
           </button>
         ) : (
           <button
