@@ -121,6 +121,15 @@ export async function submitFormResponse(formId: string, answers: { question_id:
   if (!res.ok) throw new Error("Failed to submit response");
 }
 
+export async function deleteResponses(responseIds: string[]): Promise<void> {
+  const res = await fetch(`${API_BASE}/responses/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(responseIds),
+  });
+  if (!res.ok) throw new Error("Failed to delete responses");
+}
+
 export async function fetchFormResponses(formId: string): Promise<FormResponseData[]> {
   const res = await fetch(`${API_BASE}/forms/${formId}/responses`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch responses");

@@ -78,9 +78,6 @@ def get_form_by_share_id(share_id: str, db: Session = Depends(get_db)):
     db_form = crud.get_form_by_share_id(db, share_id)
     if not db_form:
         raise HTTPException(status_code=404, detail="Public form not found")
-    if db_form.status != "published":
-        # Allow creator preview or handle unpublished state
-        pass
     return db_form
 
 @app.post("/api/forms/{form_id}/responses")
@@ -90,6 +87,11 @@ def submit_form_response(form_id: str, payload: schemas.SubmitResponseSchema, db
         raise HTTPException(status_code=404, detail="Form not found")
     resp = crud.submit_response(db, form_id, payload)
     return {"message": "Response submitted successfully", "response_id": resp.id}
+
+@app.post("/api/responses/delete")
+def delete_responses(response_ids: List[str], db: Session = Depends(get_db)):
+    crud.delete_responses(db, response_ids)
+    return {"message": "Responses deleted successfully"}
 
 # --- Questions Endpoints ---
 

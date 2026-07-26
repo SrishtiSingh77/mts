@@ -264,6 +264,11 @@ def submit_response(db: Session, form_id: str, payload: schemas.SubmitResponseSc
     db.refresh(db_response)
     return db_response
 
+def delete_responses(db: Session, response_ids: list):
+    db.query(models.FormResponse).filter(models.FormResponse.id.in_(response_ids)).delete(synchronize_session=False)
+    db.commit()
+    return True
+
 def get_form_responses(db: Session, form_id: str):
     responses = db.query(models.FormResponse).filter(models.FormResponse.form_id == form_id).order_by(models.FormResponse.submitted_at.desc()).all()
     result = []
