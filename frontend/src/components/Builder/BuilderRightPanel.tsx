@@ -1,24 +1,16 @@
 "use client";
 
+import { AlertCircle, Plus, Settings, X } from "lucide-react";
 import { useState } from "react";
-import { Plus, X, AlignLeft, Hash, CheckSquare, List, Mail, Star, ToggleLeft, Settings, AlertCircle } from "lucide-react";
-import { Question, QuestionOption, QuestionType } from "@/types";
+
+import { QUESTION_TYPES } from "@/lib/questionTypes";
+import { MAX_RATING_MAX, MIN_RATING_MAX, ratingMax } from "@/lib/validation";
+import { Question, QuestionOption } from "@/types";
 
 interface BuilderRightPanelProps {
   question: Question | null;
   onUpdateQuestion: (data: Partial<Question>) => void;
 }
-
-const QUESTION_TYPES: { type: QuestionType; label: string; icon: any }[] = [
-  { type: "short_text", label: "Short Text", icon: AlignLeft },
-  { type: "long_text", label: "Long Text", icon: AlignLeft },
-  { type: "multiple_choice", label: "Multiple Choice", icon: CheckSquare },
-  { type: "dropdown", label: "Dropdown", icon: List },
-  { type: "email", label: "Email", icon: Mail },
-  { type: "number", label: "Number", icon: Hash },
-  { type: "yes_no", label: "Yes / No", icon: ToggleLeft },
-  { type: "rating", label: "Rating", icon: Star },
-];
 
 export default function BuilderRightPanel({
   question,
@@ -71,7 +63,7 @@ export default function BuilderRightPanel({
             Question Type
           </label>
           <div className="grid grid-cols-2 gap-1.5">
-            {QUESTION_TYPES.map(({ type, label, icon: Icon }) => (
+            {QUESTION_TYPES.map(({ type, label, icon: Icon, iconClass }) => (
               <button
                 key={type}
                 onClick={() => onUpdateQuestion({ type })}
@@ -81,7 +73,7 @@ export default function BuilderRightPanel({
                     : "border-gray-200 bg-white hover:border-gray-300 text-gray-700"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${iconClass}`} />
                 <span className="truncate">{label}</span>
               </button>
             ))}
@@ -126,6 +118,30 @@ export default function BuilderRightPanel({
             className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-800 focus:ring-1 focus:ring-purple-500 focus:outline-none"
           />
         </div>
+
+        {/* Rating scale length */}
+        {question.type === "rating" && (
+          <div className="space-y-1.5 border-t border-gray-100 pt-2">
+            <label className="block text-xs font-semibold text-gray-700">
+              Scale: 1 to {ratingMax(question)}
+            </label>
+            <input
+              type="range"
+              min={MIN_RATING_MAX}
+              max={MAX_RATING_MAX}
+              value={ratingMax(question)}
+              onChange={(e) =>
+                onUpdateQuestion({
+                  settings: { ...question.settings, rating_max: Number(e.target.value) },
+                })
+              }
+              className="w-full accent-purple-600"
+            />
+            <span className="block text-[10px] text-gray-400">
+              Server rejects ratings outside this range.
+            </span>
+          </div>
+        )}
 
         {/* Choice / Option Manager */}
         {(question.type === "multiple_choice" || question.type === "dropdown") && (

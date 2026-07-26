@@ -1,129 +1,148 @@
-# FormFlow - Modern Typeform Clone
+# FormFlow — Typeform Clone
 
-FormFlow is a full-stack, functional clone of the Typeform application built with **Next.js 15 (TypeScript)**, **FastAPI (Python)**, and **SQLite**. It replicates Typeform's signature design aesthetic, drag-and-drop form builder, public shareable respondent flow, and analytical results interface.
+A functional clone of Typeform: a drag-and-drop form builder, publishable shareable links, the
+signature one-question-at-a-time respondent flow, and a results view with per-question stats.
 
----
-
-## 🌟 Key Features
-
-### 1. Recreated Typeform Builder (`/builder/[formId]`)
-- **Visual Design**: Recreates Typeform's clean builder interface with `Content`, `Workflow`, and `Connect` top navigation tabs.
-- **Pages Sidebar**:
-  - Live question list with numbers, type icons, and titles.
-  - Drag-and-Drop question reordering via `@dnd-kit`.
-  - **Dynamic Context Menu Rules**:
-    - If **1 question** exists on the page list: context menu displays **Duplicate** only.
-    - If **2 or more questions** exist: context menu displays **Duplicate** and **Delete**.
-  - **"+ Add content" Modal**: Element catalog supporting Short Text, Long Text, Multiple Choice, Dropdown, Email, Number, Yes/No, and Rating scale questions, plus Bulk Question Import and AI Generation.
-- **Live Preview Canvas**:
-  - Real-time interactive preview of the form canvas.
-  - Desktop / Mobile preview viewport toggle.
-  - Inline title and description editing.
-- **Question Settings Inspector (Right Panel)**:
-  - Question type selector, required toggle, and interactive option manager for choice/dropdown fields.
-- **Share & Publishing Overlay**:
-  - Clicking **Share** displays a publishing animation.
-  - Generates a unique shareable public link (`/f/[shareId]`).
-  - One-click **Copy Link** button with instant feedback.
-  - Publish / Unpublish toggle.
-
-### 2. Full-Screen Public Respondent Flow (`/f/[shareId]`)
-- **No Login Required**: Published forms are publicly accessible by anyone with the link.
-- **Signature One-Question-at-a-Time Flow**: Full-screen view with Framer Motion slide-up and fade transitions.
-- **Keyboard Navigation**: Advance with `Enter ↵` or `Arrow Down`, go back with `Arrow Up`.
-- **Validation**: Client + server validation for required fields, email format, and numerical inputs.
-- **Progress Indicator & Navigation**: Real-time progress bar, percentage counter, and bottom-right navigation buttons.
-- **Branded Footer**: Clean "Powered by FormFlow" footer.
-- **Celebratory Thank-You Screen**: Confetti celebration (`canvas-confetti`) upon submission with an option to submit another response.
-
-### 3. Results & Analytics (`/forms/[formId]/results`)
-- **Summary Tab**:
-  - Per-question statistical breakdown.
-  - Choice & Dropdown: Option counts & percentage progress bars.
-  - Yes/No: Yes vs. No response breakdown.
-  - Rating: Calculated average rating score + distribution.
-  - Number: Average, Min, and Max metrics.
-  - Text & Email: Scrollable feed of all submitted text responses.
-- **Responses Tab**:
-  - Data table listing every submission with timestamp and answer summary.
-  - Clicking any submission row opens a side drawer showing all questions and exact answers submitted by that respondent.
+**Stack:** Next.js 15 (TypeScript) · FastAPI (Python) · SQLite
 
 ---
 
-## 🛠️ Tech Stack
+## Contents
 
-- **Frontend**: Next.js 15 (TypeScript), Tailwind CSS, Framer Motion, `@dnd-kit/core`, `@dnd-kit/sortable`, `lucide-react`, `canvas-confetti`.
-- **Backend**: Python 3.8+, FastAPI, SQLAlchemy, Pydantic, Uvicorn.
-- **Database**: SQLite (`typeform.db`).
-
----
-
-## 📁 Repository Structure
-
-```
-mts/
-├── backend/
-│   ├── main.py            # FastAPI main routes & CORS setup
-│   ├── database.py        # SQLite engine & session configuration
-│   ├── models.py          # SQLAlchemy database models
-│   ├── schemas.py         # Pydantic schemas for API validation
-│   ├── crud.py            # Database queries & analytics calculator
-│   ├── seed.py            # Database seeding script
-│   └── requirements.txt   # Python backend dependencies
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── page.tsx                  # Dashboard Workspace page
-│   │   │   ├── builder/[formId]/page.tsx # Form Builder page
-│   │   │   ├── f/[shareId]/page.tsx      # Public Respondent Flow
-│   │   │   └── forms/[formId]/results/page.tsx # Results & Responses
-│   │   ├── components/                   # Reusable UI components
-│   │   ├── lib/api.ts                    # Backend API client
-│   │   └── types/index.ts                # TypeScript interfaces
-│   ├── package.json
-│   └── tailwind.config.ts
-└── README.md
-```
+- [Quick start](#quick-start)
+- [Architecture](#architecture)
+- [Database schema](#database-schema)
+- [API overview](#api-overview)
+- [Validation](#validation)
+- [Features](#features)
+- [Assumptions & scope](#assumptions--scope)
+- [Deployment](#deployment)
 
 ---
 
-## ⚙️ Setup & Running Locally
+## Quick start
 
-### 1. Backend Setup (FastAPI)
+Two processes: FastAPI on `:8000`, Next.js on `:3000`.
+
+### Backend
+
 ```bash
 cd backend
-python -m pip install -r requirements.txt
-python seed.py # (Optional: pre-seeds DB with sample published & draft forms + responses)
-python -m uvicorn main:app --reload --port 8000
+python -m venv .venv
+# Windows:  .venv\Scripts\activate
+# macOS/Linux:  source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
-*The FastAPI backend will start on `http://localhost:8000` and automatically create & seed `typeform.db` on launch.*
 
-### 2. Frontend Setup (Next.js)
+The database file is created and seeded on first boot — no migration step. Interactive API docs
+are at <http://localhost:8000/docs>.
+
+### Frontend
+
 ```bash
 cd frontend
 npm install --legacy-peer-deps
+cp .env.example .env.local   # defaults to http://localhost:8000/api
 npm run dev
 ```
-*Open `http://localhost:3000` in your browser to view the Typeform Clone dashboard.*
+
+Open <http://localhost:3000>.
+
+### Seeded data
+
+`backend/seed.py` inserts one creator and three forms:
+
+| Form | Status | Public link | Responses |
+| --- | --- | --- | --- |
+| Customer Product Feedback | published | `/f/demo-feedback` | 5 |
+| Tech Summit 2026 Registration | published | `/f/demo-event` | 3 |
+| Employee Onboarding Checklist | draft | *(none — unpublished)* | 0 |
+
+Between them the questions cover all eight supported types. Deleting `backend/typeform.db`
+re-seeds from scratch on the next boot.
 
 ---
 
-## 🗄️ Database Schema
+## Architecture
+
+```
+backend/
+  main.py         HTTP layer — routing, status codes, dependency wiring only
+  crud.py         persistence + aggregation; every DB read/write lives here
+  validation.py   answer rules; the authoritative validator
+  schemas.py      Pydantic request/response contracts
+  models.py       SQLAlchemy tables
+  database.py     engine, session factory, SQLite FK pragma
+  seed.py         sample data
+
+frontend/src/
+  app/                       routes (dashboard, builder, public form, results)
+  components/Questions/      one input component per question type + registry
+  components/Respondent/     welcome / question card / footer / ending screens
+  components/Builder/        sidebar, canvas, inspector, share tab, settings tab
+  components/Results/        summary cards, responses table, detail panel
+  hooks/useFormFlow.ts       respondent state machine
+  lib/api.ts                 typed fetch client
+  lib/validation.ts          mirror of backend/validation.py
+  lib/questionTypes.ts       type labels + icons, shared by every surface
+  lib/theme.ts               theme presets and inline-style helpers
+```
+
+Three decisions worth calling out:
+
+**1. One question-input registry, two consumers.** `components/Questions/QuestionInput.tsx` maps a
+question type to a component. The respondent flow renders it interactively; the builder canvas
+renders the same component with `disabled`. The live preview is therefore the real input, not a
+lookalike — a new question type is one registry entry, not two parallel switch statements.
+
+**2. Validation lives on the server; the client mirrors it.** `backend/validation.py` is the only
+thing that decides whether a response is storable. `frontend/src/lib/validation.ts` repeats the
+same rules purely so the respondent gets an instant inline message. To stop the two drifting,
+the rule table is served at `GET /api/meta/validation-rules` and can be diffed against the mirror.
+
+**3. Public and creator lookups are separate functions.** `crud.get_form()` (creator-side) resolves
+a form by id *or* share id. `crud.get_published_form_by_share_id()` resolves by share id *and*
+requires `status == "published"`. Only the second backs the public routes, so an unpublished form
+is not reachable — not even by guessing its internal id.
+
+---
+
+## Database schema
+
+Five tables. Every child relationship is `ON DELETE CASCADE`, and SQLite is opened with
+`PRAGMA foreign_keys=ON` (see `database.py`) so those declarations are actually enforced.
 
 ```mermaid
 erDiagram
+    USERS ||--o{ FORMS : owns
     FORMS ||--o{ QUESTIONS : contains
     QUESTIONS ||--o{ QUESTION_OPTIONS : has
-    FORMS ||--o{ RESPONSES : receives
-    RESPONSES ||--o{ ANSWERS : includes
-    QUESTIONS ||--o{ ANSWERS : answered_in
+    FORMS ||--o{ FORM_RESPONSES : receives
+    FORM_RESPONSES ||--o{ ANSWERS : includes
+    QUESTIONS ||--o{ ANSWERS : answered_by
+
+    USERS {
+        string id PK
+        string name
+        string email UK
+        datetime created_at
+    }
 
     FORMS {
         string id PK
+        string creator_id FK
         string title
-        string description
+        text description
         string status "draft | published"
         string share_id UK
+        string theme_color
+        string theme_background
+        string theme_font "sans | serif | mono"
+        string ending_title
+        text ending_description
+        string ending_button_label
+        bool ending_show_button
         datetime created_at
         datetime updated_at
     }
@@ -133,10 +152,10 @@ erDiagram
         string form_id FK
         string type "short_text | long_text | multiple_choice | dropdown | email | number | yes_no | rating"
         string title
-        string description
-        boolean is_required
+        text description
+        bool is_required
         int position
-        text settings
+        text settings "JSON, e.g. {rating_max: 5}"
     }
 
     QUESTION_OPTIONS {
@@ -146,7 +165,7 @@ erDiagram
         int position
     }
 
-    RESPONSES {
+    FORM_RESPONSES {
         string id PK
         string form_id FK
         datetime submitted_at
@@ -159,3 +178,164 @@ erDiagram
         text value
     }
 ```
+
+Notes on the design:
+
+- **Options are rows, not a JSON array.** Choice answers store the option label, so aggregating
+  counts per option is a plain `GROUP BY`-shaped loop rather than JSON parsing.
+- **`position` integers, not linked lists.** Reorder writes a contiguous `0..n-1` sequence in one
+  pass; delete and duplicate close and open the gap so ordering never degrades.
+- **`answers.value` is TEXT for every type.** One answers table beats eight typed columns or a
+  polymorphic join, and `validation.py` normalizes on write (`"yes"` → `"Yes"`, `"7.0"` → `"7"`,
+  emails lowercased) so aggregation can trust the stored strings.
+- **`settings` is a JSON string in one column.** Per-type extras vary by type and would otherwise be
+  a wide sparse table. It is parsed at the schema boundary, so the API exposes a typed object.
+- **`users` exists even though auth does not.** Every form points at one seeded creator. Adding real
+  sign-in later means inserting rows, not reshaping `forms`.
+
+---
+
+## API overview
+
+Base path `/api`. Interactive docs at `/docs`.
+
+### Meta
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/meta/validation-rules` | Rule table the client mirror is checked against |
+
+### Forms (creator)
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/forms` | List forms with `status` and `response_count` |
+| `POST` | `/forms` | Create a form (seeded with one starter question) |
+| `GET` | `/forms/{form_id}` | Form with ordered questions and options |
+| `PUT` | `/forms/{form_id}` | Update title, description, status, `theme`, `ending` |
+| `POST` | `/forms/{form_id}/duplicate` | Deep copy; the copy is always a draft with a new share id |
+| `DELETE` | `/forms/{form_id}` | Delete form and everything under it |
+| `POST` | `/forms/{form_id}/publish` | Toggle draft ⇄ published; 400 if the form has no questions |
+
+### Public respondent flow (no auth)
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/forms/share/{share_id}` | Fetch a **published** form; 404 otherwise |
+| `POST` | `/forms/share/{share_id}/responses` | Submit; 422 with per-question errors, 404 if unpublished |
+
+### Questions
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/questions/form/{form_id}` | Add a question (choice types get three default options) |
+| `PUT` | `/questions/{question_id}` | Partial update; sending `options` replaces the whole set |
+| `POST` | `/questions/{question_id}/duplicate` | Copy in place, shifting later questions down |
+| `DELETE` | `/questions/{question_id}` | Delete and close the position gap |
+| `PUT` | `/questions/form/{form_id}/reorder` | Body is an ordered array of question ids |
+
+### Results
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/forms/{form_id}/responses` | Submissions, newest first, answers denormalized |
+| `GET` | `/forms/{form_id}/responses.csv` | CSV download — one row per submission, one column per question |
+| `GET` | `/forms/{form_id}/summary` | Per-question stats + answer-coverage rate |
+| `POST` | `/forms/{form_id}/responses/delete` | Bulk delete, scoped to this form |
+| `POST` | `/forms/{form_id}/responses` | Creator-side submit (backs "generate test response") |
+
+Summary stats by type: choice/dropdown → count and percentage per option · yes_no → yes/no counts ·
+rating → average, scale max, distribution · number → average, min, max · text/email → all answers.
+
+---
+
+## Validation
+
+Both layers run the same rules; the server always runs them.
+
+| Rule | Applies to | Message |
+| --- | --- | --- |
+| `required` | any required question | Please answer this required question before continuing. |
+| `email` | `email` | Please enter a valid email address (e.g. name@example.com). |
+| `number` | `number` | Please enter a valid numeric value. |
+| `choice` | `multiple_choice`, `dropdown` | Please pick one of the available options. |
+| `yes_no` | `yes_no` | Please answer "Yes" or "No". |
+| `rating` | `rating` | Please pick a rating between 1 and N. |
+| `too_long` | text types | Answer is too long (maximum N characters). |
+| `unknown_question` | server only | This answer does not belong to the form being submitted. |
+| `duplicate` | server only | This question was answered more than once. |
+
+A rejected submission returns `422` with `{ detail, errors: [{ question_id, code, message }] }`.
+The respondent flow reads that array, jumps back to the first offending question, and shows the
+message inline.
+
+Two things only the server can guarantee, and does:
+
+- Answers whose `question_id` does not belong to the submitted form are rejected, not stored.
+- Choice answers must match a real option label, so a crafted request cannot invent an option.
+
+---
+
+## Features
+
+**Builder** — ordered question list with drag-and-drop reorder (`@dnd-kit`), add/duplicate/delete,
+eight question types, per-question required toggle, description text, option manager, rating scale
+length, and a live preview that renders the real respondent input in desktop or mobile viewport.
+Question edits are debounced so typing a title is one request rather than one per keystroke.
+
+**Form management** — dashboard listing status and response count, create, rename, duplicate,
+delete, publish/unpublish. Copying an unpublished form's link warns that it is still a draft.
+
+**Respondent flow** — full-screen one question at a time with Framer Motion transitions, progress
+bar, `Enter`/`↓` to advance and `↑` to go back, `Shift+Enter` for newlines in long text, choice
+questions that auto-advance on select, inline validation, confetti thank-you screen, and a
+"submit another response" path. No login required.
+
+**Results** — Insights, Summary and Responses tabs; per-question stats including a rating
+histogram; searchable submissions table; row detail side panel; multi-select bulk delete; CSV
+export; and a test-response generator that produces answers valid under the server's own rules.
+
+**Theme & thank-you settings** — a Settings tab with colour presets, accent and background colour
+pickers, a font choice, and editable thank-you screen copy. All of it persists on the form and is
+applied to the public respondent flow.
+
+**Toasts** — one app-wide provider (`components/ToastProvider.tsx`); every mutation reports success
+or failure through it.
+
+---
+
+## Assumptions & scope
+
+**Assumptions**
+
+1. **Single creator, no auth.** All forms belong to a seeded `users` row (`creator-default`),
+   matching the assignment's "assume a default logged-in creator". No login screen, no sessions.
+2. **Share ids are 8-char slugs** and are the only public handle for a form. Duplicating a form
+   mints a new one, so a copy never inherits a link that is already circulating.
+3. **A submission is all-or-nothing.** Partial progress is not persisted, so drop-off analytics
+   cannot be computed; the Insights tab labels those metrics as unavailable rather than inventing
+   them. The one rate it does show — answer coverage — is computed from stored data.
+4. **Unanswered optional questions are stored as empty strings**, so a submission always has one
+   answer row per question. This keeps "answered vs skipped" a data question, not an inference.
+5. **Rating scales run 1..N**, N clamped to 3–10, default 5.
+
+**Deliberately left as placeholders** (per the brief): logic jumps and branching (Workflow tab),
+integrations and webhooks (Connect tab), team collaboration, file-upload and payment question
+types, AI question generation beyond a local stub, and the QR/embed options in the Share tab.
+Each is visible in the UI marked *Coming Soon* rather than hidden.
+
+---
+
+## Deployment
+
+**Backend — Render.** `render.yaml` at the repo root defines the service. It mounts a 1 GB disk at
+`/data` and sets `DATABASE_URL=sqlite:////data/typeform.db` (four slashes = absolute path) so
+responses survive redeploys — on an ephemeral filesystem the SQLite file is wiped on every deploy.
+Set `ALLOWED_ORIGINS` to the deployed frontend origin. `backend/Dockerfile` is an equivalent
+container path for any other host.
+
+**Frontend — Vercel.** Set root directory to `frontend` and
+`NEXT_PUBLIC_API_URL=https://<your-api-host>/api`. Build command and output are the Next.js
+defaults.
+
+Environment variables are documented in `backend/.env.example` and `frontend/.env.example`.

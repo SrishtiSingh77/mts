@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: typeform-clone-api
+    runtime: python
+    rootDir: backend
+    plan: starter # a paid plan is required for the persistent disk below
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.5"
+      # Absolute sqlite path (four slashes) pointing at the mounted disk.
+      - key: DATABASE_URL
+        value: sqlite:////data/typeform.db
+      # Set to the deployed frontend origin once Vercel has assigned one.
+      - key: ALLOWED_ORIGINS
+        sync: false
+    disk:
+      name: typeform-data
+      mountPath: /data
+      sizeGB: 1

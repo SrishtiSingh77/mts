@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Link2, Edit3, QrCode, Globe, Copy, Check, ExternalLink, Sparkles, Layout, Mail } from "lucide-react";
+import { AlertTriangle, Check, Edit3, ExternalLink, Layout, Link2, Mail, QrCode, Sparkles } from "lucide-react";
+import { useToast } from "@/components/ToastProvider";
 import { Form } from "@/types";
 
 interface ShareTabViewProps {
   form: Form;
+  onTogglePublish: () => void;
 }
 
-export default function ShareTabView({ form }: ShareTabViewProps) {
+export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProps) {
   const [copied, setCopied] = useState(false);
+  const toast = useToast();
+  const isPublished = form.status === "published";
   const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/f/${form.share_id}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
+    toast.success("Shareable link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -29,6 +34,59 @@ export default function ShareTabView({ form }: ShareTabViewProps) {
           <p className="text-xs text-gray-500">
             Publish your link or embed your form directly into your site or emails.
           </p>
+        </div>
+
+        {/* Publish state — the link only resolves while published */}
+        <div
+          className={`flex items-center justify-between rounded-2xl border p-5 ${
+            isPublished
+              ? "border-emerald-200 bg-emerald-50/60"
+              : "border-amber-200 bg-amber-50/60"
+          }`}
+        >
+          <div className="flex items-start space-x-3">
+            {isPublished ? (
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+            ) : (
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+            )}
+            <div className="space-y-0.5">
+              <h3
+                className={`text-sm font-bold ${
+                  isPublished ? "text-emerald-900" : "text-amber-900"
+                }`}
+              >
+                {isPublished ? "Your form is live" : "Your form is a draft"}
+              </h3>
+              <p className={`text-xs ${isPublished ? "text-emerald-800" : "text-amber-800"}`}>
+                {isPublished
+                  ? "Anyone with the link can respond — no account needed."
+                  : "The public link returns “not available” until you publish."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-shrink-0 items-center space-x-2">
+            {isPublished && (
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="shadow-2xs flex items-center space-x-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>Open</span>
+              </a>
+            )}
+            <button
+              onClick={onTogglePublish}
+              className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 ${
+                isPublished ? "bg-gray-700 hover:bg-gray-800" : "bg-emerald-700 hover:bg-emerald-800"
+              }`}
+            >
+              {isPublished ? "Unpublish" : "Publish"}
+            </button>
+          </div>
         </div>
 
         {/* Main Share Link Card matching Screenshot 3 */}

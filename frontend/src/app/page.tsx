@@ -7,16 +7,17 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import FormCardContextMenu from "@/components/FormCardContextMenu";
 import { Form } from "@/types";
 import { fetchForms, createForm, updateForm, duplicateForm, deleteForm } from "@/lib/api";
-import { MoreHorizontal, Calendar, LayoutList, LayoutGrid, UserPlus, Globe, BarChart2, Edit3, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ToastProvider";
+import { MoreHorizontal, Calendar, LayoutList, LayoutGrid, UserPlus, BarChart2 } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const toast = useToast();
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
+
   // Rename Modal State
   const [renameModalForm, setRenameModalForm] = useState<Form | null>(null);
   const [newTitle, setNewTitle] = useState("");
@@ -26,8 +27,8 @@ export default function DashboardPage() {
       setLoading(true);
       const data = await fetchForms();
       setForms(data);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load your forms.");
     } finally {
       setLoading(false);
     }
@@ -37,57 +38,60 @@ export default function DashboardPage() {
     loadForms();
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const handleCreateForm = async () => {
     try {
       const newForm = await createForm("New form");
       router.push(`/builder/${newForm.id}`);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create a form.");
     }
   };
 
   const handleDuplicate = async (formId: string) => {
     try {
       await duplicateForm(formId);
-      showToast("Form duplicated successfully");
+      toast.success("Form duplicated as a draft");
       loadForms();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not duplicate that form.");
     }
   };
 
   const handleDelete = async (formId: string) => {
-    if (confirm("Are you sure you want to delete this form?")) {
-      try {
-        await deleteForm(formId);
-        showToast("Form deleted");
-        loadForms();
-      } catch (err) {
-        console.error(err);
-      }
+    const target = forms.find((form) => form.id === formId);
+    const warning = target?.response_count
+      ? `Delete “${target.title}” and its ${target.response_count} response(s)? This cannot be undone.`
+      : "Delete this form? This cannot be undone.";
+    if (!confirm(warning)) return;
+
+    try {
+      await deleteForm(formId);
+      toast.success("Form deleted");
+      loadForms();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete that form.");
     }
   };
 
   const handleCopyLink = (shareId: string) => {
-    const url = `${window.location.origin}/f/${shareId}`;
-    navigator.clipboard.writeText(url);
-    showToast("Shareable link copied to clipboard!");
+    const form = forms.find((candidate) => candidate.share_id === shareId);
+    navigator.clipboard.writeText(`${window.location.origin}/f/${shareId}`);
+    if (form && form.status !== "published") {
+      toast.info("Link copied — publish the form before sharing it.");
+    } else {
+      toast.success("Shareable link copied to clipboard");
+    }
   };
 
   const handleSaveRename = async () => {
     if (!renameModalForm || !newTitle.trim()) return;
     try {
-      await updateForm(renameModalForm.id, { title: newTitle });
-      showToast("Form renamed");
+      await updateForm(renameModalForm.id, { title: newTitle.trim() });
+      toast.success("Form renamed");
       setRenameModalForm(null);
       loadForms();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not rename that form.");
     }
   };
 
@@ -255,13 +259,6 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
-
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 bg-gray-900 text-white text-xs font-medium px-4 py-2.5 rounded-lg shadow-xl border border-gray-700 flex items-center space-x-2 animate-fade-in z-50">
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
       {/* Rename Form Modal */}
       {renameModalForm && (

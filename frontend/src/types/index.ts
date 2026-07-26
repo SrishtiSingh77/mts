@@ -8,6 +8,11 @@ export type QuestionType =
   | "yes_no"
   | "rating";
 
+/** Per-type extras stored as JSON on the question row. */
+export interface QuestionSettings {
+  rating_max?: number;
+}
+
 export interface QuestionOption {
   id?: string;
   label: string;
@@ -22,8 +27,23 @@ export interface Question {
   description?: string;
   is_required: boolean;
   position: number;
-  settings?: string;
+  settings: QuestionSettings;
   options: QuestionOption[];
+}
+
+export type ThemeFont = "sans" | "serif" | "mono";
+
+export interface FormTheme {
+  color: string;
+  background: string;
+  font: ThemeFont;
+}
+
+export interface FormEnding {
+  title: string;
+  description: string;
+  button_label: string;
+  show_button: boolean;
 }
 
 export interface Form {
@@ -34,8 +54,19 @@ export interface Form {
   share_id: string;
   created_at: string;
   updated_at: string;
-  response_count?: number;
+  response_count: number;
+  theme: FormTheme;
+  ending: FormEnding;
   questions?: Question[];
+}
+
+/** Shape of a PUT /api/forms/:id body. */
+export interface FormUpdatePayload {
+  title?: string;
+  description?: string;
+  status?: Form["status"];
+  theme?: FormTheme;
+  ending?: FormEnding;
 }
 
 export interface Answer {
@@ -68,6 +99,7 @@ export interface QuestionSummary {
   yes_count?: number;
   no_count?: number;
   avg_rating?: number;
+  rating_max?: number;
   rating_distribution?: Record<number, number>;
   avg_number?: number;
   min_number?: number;
@@ -79,5 +111,13 @@ export interface FormSummary {
   form_id: string;
   form_title: string;
   total_responses: number;
+  completion_rate: number;
   questions_summary: QuestionSummary[];
+}
+
+/** One entry from a 422 submission response, keyed to the offending question. */
+export interface FieldError {
+  question_id: string;
+  code: string;
+  message: string;
 }

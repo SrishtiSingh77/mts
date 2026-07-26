@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Play, HelpCircle, ChevronRight, Share2, Layers, BarChart2 } from "lucide-react";
+import { ChevronRight, HelpCircle, Layers } from "lucide-react";
 import { Form } from "@/types";
 
-export type BuilderTab = "Content" | "Workflow" | "Connect" | "Share" | "Results";
+export const BUILDER_TABS = [
+  "Content",
+  "Workflow",
+  "Connect",
+  "Share",
+  "Settings",
+  "Results",
+] as const;
+
+export type BuilderTab = (typeof BUILDER_TABS)[number];
 
 interface BuilderHeaderProps {
   form: Form;
@@ -38,7 +47,7 @@ export default function BuilderHeader({
 
       {/* Center Tabs: Content / Workflow / Connect / Share / Results */}
       <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
-        {(["Content", "Workflow", "Connect", "Share", "Results"] as const).map((tab) => (
+        {BUILDER_TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -55,6 +64,21 @@ export default function BuilderHeader({
 
       {/* Right side buttons */}
       <div className="flex items-center space-x-3">
+        <span
+          className={`inline-flex items-center space-x-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            form.status === "published"
+              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border border-amber-200 bg-amber-50 text-amber-700"
+          }`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              form.status === "published" ? "bg-emerald-500" : "bg-amber-500"
+            }`}
+          />
+          <span className="capitalize">{form.status}</span>
+        </span>
+
         <button className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-colors">
           View plans
         </button>

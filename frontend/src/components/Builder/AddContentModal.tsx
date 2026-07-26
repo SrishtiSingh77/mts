@@ -1,27 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import {
-  X,
-  Search,
-  AlignLeft,
-  CheckSquare,
-  List,
-  Mail,
-  Hash,
-  ToggleLeft,
-  Star,
-  Sparkles,
-  FileText,
-  HelpCircle,
-  Video,
-  Phone,
-  MapPin,
-  Calendar,
-  Upload,
-  CheckCircle2,
-} from "lucide-react";
+import { Calendar, Lock, Search, Sparkles, Upload, X } from "lucide-react";
+import { QUESTION_TYPES, questionTypesByGroup } from "@/lib/questionTypes";
 import { QuestionType } from "@/types";
+
+/** Question types the assignment leaves as placeholders. */
+const UNAVAILABLE_TYPES = [
+  { label: "File Upload", icon: Upload },
+  { label: "Date", icon: Calendar },
+  { label: "Payment", icon: Lock },
+];
+
+const RECOMMENDED: QuestionType[] = ["short_text", "multiple_choice", "rating"];
 
 interface AddContentModalProps {
   isOpen: boolean;
@@ -43,6 +34,8 @@ export default function AddContentModal({
   const [isGenerating, setIsGenerating] = useState(false);
 
   if (!isOpen) return null;
+
+  const groups = questionTypesByGroup();
 
   const handleSelect = (type: QuestionType) => {
     onSelectType(type);
@@ -149,130 +142,72 @@ export default function AddContentModal({
                     Recommended
                   </span>
                   <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleSelect("short_text")}
-                      className="w-full text-left p-2 rounded-lg border border-gray-200 hover:border-purple-500 hover:bg-purple-50/50 flex items-center space-x-2.5 text-xs font-medium text-gray-800 transition-all"
-                    >
-                      <AlignLeft className="w-4 h-4 text-gray-500" />
-                      <span>Short Text</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("multiple_choice")}
-                      className="w-full text-left p-2 rounded-lg border border-gray-200 hover:border-purple-500 hover:bg-purple-50/50 flex items-center space-x-2.5 text-xs font-medium text-gray-800 transition-all"
-                    >
-                      <CheckSquare className="w-4 h-4 text-purple-600" />
-                      <span>Multiple Choice</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("rating")}
-                      className="w-full text-left p-2 rounded-lg border border-gray-200 hover:border-purple-500 hover:bg-purple-50/50 flex items-center space-x-2.5 text-xs font-medium text-gray-800 transition-all"
-                    >
-                      <Star className="w-4 h-4 text-amber-500" />
-                      <span>Rating Scale</span>
-                    </button>
+                    {RECOMMENDED.map((type) => {
+                      const meta = QUESTION_TYPES.find((candidate) => candidate.type === type)!;
+                      const Icon = meta.icon;
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => handleSelect(type)}
+                          className="w-full text-left p-2 rounded-lg border border-gray-200 hover:border-purple-500 hover:bg-purple-50/50 flex items-center space-x-2.5 text-xs font-medium text-gray-800 transition-all"
+                        >
+                          <Icon className={`w-4 h-4 ${meta.iconClass}`} />
+                          <span>{meta.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
 
-              {/* Right Grid of Question Elements */}
+              {/* Element catalog, grouped straight from the shared type registry */}
               <div className="col-span-8 grid grid-cols-2 gap-6 text-xs">
-                {/* Contact Info Column */}
+                {Object.entries(groups).map(([group, metas]) => (
+                  <div key={group} className="space-y-3">
+                    <h4 className="font-bold text-gray-400 uppercase tracking-wider text-[11px]">
+                      {group}
+                    </h4>
+                    <div className="space-y-1.5">
+                      {metas
+                        .filter((meta) =>
+                          meta.label.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                        )
+                        .map((meta) => {
+                          const Icon = meta.icon;
+                          return (
+                            <button
+                              key={meta.type}
+                              onClick={() => handleSelect(meta.type)}
+                              className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
+                            >
+                              <Icon className={`w-4 h-4 ${meta.iconClass}`} />
+                              <span>{meta.label}</span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-400 uppercase tracking-wider text-[11px]">
-                    Contact Info
+                    Not available yet
                   </h4>
                   <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleSelect("email")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <Mail className="w-4 h-4 text-emerald-600" />
-                      <span>Email</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("short_text")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <Phone className="w-4 h-4 text-blue-600" />
-                      <span>Phone Number</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("long_text")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <MapPin className="w-4 h-4 text-red-500" />
-                      <span>Address</span>
-                    </button>
-                  </div>
-
-                  <h4 className="font-bold text-gray-400 uppercase tracking-wider text-[11px] pt-3">
-                    Choice
-                  </h4>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleSelect("multiple_choice")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <CheckSquare className="w-4 h-4 text-purple-600" />
-                      <span>Multiple Choice</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("dropdown")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <List className="w-4 h-4 text-blue-600" />
-                      <span>Dropdown</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("yes_no")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <ToggleLeft className="w-4 h-4 text-indigo-600" />
-                      <span>Yes / No</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Rating & Text Column */}
-                <div className="space-y-3">
-                  <h4 className="font-bold text-gray-400 uppercase tracking-wider text-[11px]">
-                    Rating & Ranking
-                  </h4>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleSelect("rating")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                      <span>Rating Scale</span>
-                    </button>
-                  </div>
-
-                  <h4 className="font-bold text-gray-400 uppercase tracking-wider text-[11px] pt-3">
-                    Text & Numbers
-                  </h4>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleSelect("short_text")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <AlignLeft className="w-4 h-4 text-gray-600" />
-                      <span>Short Text</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("long_text")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <FileText className="w-4 h-4 text-gray-600" />
-                      <span>Long Text</span>
-                    </button>
-                    <button
-                      onClick={() => handleSelect("number")}
-                      className="w-full text-left p-2 rounded-lg hover:bg-gray-100 flex items-center space-x-2.5 text-gray-800 transition-colors"
-                    >
-                      <Hash className="w-4 h-4 text-amber-600" />
-                      <span>Number</span>
-                    </button>
+                    {UNAVAILABLE_TYPES.map(({ label, icon: Icon }) => (
+                      <div
+                        key={label}
+                        className="w-full p-2 rounded-lg flex items-center justify-between text-gray-400 cursor-not-allowed"
+                      >
+                        <span className="flex items-center space-x-2.5">
+                          <Icon className="w-4 h-4" />
+                          <span>{label}</span>
+                        </span>
+                        <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded font-semibold">
+                          Soon
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

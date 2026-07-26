@@ -17,7 +17,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, GripVertical, MoreHorizontal, Copy, Trash2, AlignLeft, Hash, CheckSquare, List, Mail, Star, ToggleLeft, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
+import { Plus, GripVertical, MoreHorizontal, Copy, Trash2, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
+import { questionTypeMeta } from "@/lib/questionTypes";
 import { Question } from "@/types";
 
 interface SortableQuestionItemProps {
@@ -53,27 +54,7 @@ function SortableQuestionItem({
     transition,
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "short_text":
-      case "long_text":
-        return <AlignLeft className="w-3.5 h-3.5 text-gray-500" />;
-      case "multiple_choice":
-        return <CheckSquare className="w-3.5 h-3.5 text-purple-600" />;
-      case "dropdown":
-        return <List className="w-3.5 h-3.5 text-blue-600" />;
-      case "email":
-        return <Mail className="w-3.5 h-3.5 text-emerald-600" />;
-      case "number":
-        return <Hash className="w-3.5 h-3.5 text-amber-600" />;
-      case "rating":
-        return <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-400" />;
-      case "yes_no":
-        return <ToggleLeft className="w-3.5 h-3.5 text-indigo-600" />;
-      default:
-        return <AlignLeft className="w-3.5 h-3.5 text-gray-500" />;
-    }
-  };
+  const { icon: TypeIcon, iconClass } = questionTypeMeta(question.type);
 
   return (
     <div
@@ -99,7 +80,7 @@ function SortableQuestionItem({
           {index + 1}
         </span>
 
-        {getTypeIcon(question.type)}
+        <TypeIcon className={`w-3.5 h-3.5 flex-shrink-0 ${iconClass}`} />
 
         <span className="truncate max-w-[100px]">
           {question.title || "Untitled Question"}

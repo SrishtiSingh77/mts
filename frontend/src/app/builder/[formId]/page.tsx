@@ -1,57 +1,78 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { Plug, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
-import BuilderHeader, { BuilderTab } from "@/components/Builder/BuilderHeader";
-import BuilderSidebarPages from "@/components/Builder/BuilderSidebarPages";
-import BuilderCanvas from "@/components/Builder/BuilderCanvas";
-import BuilderRightPanel from "@/components/Builder/BuilderRightPanel";
-import ShareModal from "@/components/Builder/ShareModal";
+import { use, useCallback, useEffect, useState } from "react";
+
 import AddContentModal from "@/components/Builder/AddContentModal";
+import BuilderCanvas from "@/components/Builder/BuilderCanvas";
+import BuilderHeader, { BuilderTab } from "@/components/Builder/BuilderHeader";
+import BuilderRightPanel from "@/components/Builder/BuilderRightPanel";
+import BuilderSidebarPages from "@/components/Builder/BuilderSidebarPages";
+import ComingSoonPanel from "@/components/Builder/ComingSoonPanel";
+import SettingsTabView from "@/components/Builder/SettingsTabView";
 import ShareTabView from "@/components/Builder/ShareTabView";
-import { Form, Question, QuestionType } from "@/types";
+import { useToast } from "@/components/ToastProvider";
 import {
-  fetchForm,
-  updateForm,
   createQuestion,
-  updateQuestion,
-  duplicateQuestion,
   deleteQuestion,
+  duplicateQuestion,
+  fetchForm,
   reorderQuestions,
   togglePublishForm,
+  updateForm,
+  updateQuestion,
 } from "@/lib/api";
+import { Form, FormEnding, FormTheme, FormUpdatePayload, Question, QuestionType } from "@/types";
+
+const SAVE_DEBOUNCE_MS = 500;
+
+/** Per-question debounce timers, module-scoped so re-renders do not reset them. */
+const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export default function BuilderPage({ params }: { params: Promise<{ formId: string }> }) {
-  const resolvedParams = use(params);
-  const formId = resolvedParams.formId;
+  const { formId } = use(params);
   const router = useRouter();
+  const toast = useToast();
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<BuilderTab>("Content");
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
 
-  const loadFormData = async () => {
+  const loadForm = useCallback(async () => {
     try {
       const data = await fetchForm(formId);
       setForm(data);
-      if (data.questions && data.questions.length > 0) {
-        if (!activeQuestionId || !data.questions.find((q) => q.id === activeQuestionId)) {
-          setActiveQuestionId(data.questions[0].id);
-        }
-      }
-    } catch (err) {
-      console.error(err);
+      setActiveQuestionId((current) => {
+        const stillExists = data.questions?.some((q) => q.id === current);
+        return stillExists ? current : (data.questions?.[0]?.id ?? null);
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load this form.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [formId, toast]);
 
   useEffect(() => {
-    loadFormData();
-  }, [formId]);
+    loadForm();
+  }, [loadForm]);
+
+  /** Optimistic form patch plus a persisted PUT. */
+  const saveForm = async (patch: FormUpdatePayload, successMessage?: string) => {
+    if (!form) return;
+    setForm({ ...form, ...patch } as Form);
+    try {
+      const updated = await updateForm(form.id, patch);
+      setForm(updated);
+      if (successMessage) toast.success(successMessage);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save your changes.");
+      loadForm();
+    }
+  };
 
   const handleTabChange = (tab: BuilderTab) => {
     if (tab === "Results") {
@@ -61,87 +82,88 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
     setActiveTab(tab);
   };
 
-  const handleUpdateFormTitle = async (newTitle: string) => {
+  const handleAddQuestion = async (type: QuestionType) => {
     if (!form) return;
-    setForm({ ...form, title: newTitle });
     try {
-      await updateForm(form.id, { title: newTitle });
-    } catch (err) {
-      console.error(err);
+      const question = await createQuestion(form.id, type);
+      setForm({ ...form, questions: [...(form.questions ?? []), question] });
+      setActiveQuestionId(question.id);
+      toast.success("Question added");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not add that question.");
     }
   };
 
-  const handleAddQuestionWithType = async (type: QuestionType = "short_text") => {
+  const handleBulkAdd = async (titles: string[]) => {
     if (!form) return;
     try {
-      const newQ = await createQuestion(form.id, type);
-      const updatedQuestions = [...(form.questions || []), newQ];
-      setForm({ ...form, questions: updatedQuestions });
-      setActiveQuestionId(newQ.id);
-    } catch (err) {
-      console.error(err);
+      await Promise.all(titles.map((title) => createQuestion(form.id, "short_text", { title })));
+      await loadForm();
+      toast.success(`Imported ${titles.length} question${titles.length === 1 ? "" : "s"}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Import failed.");
     }
   };
 
-  const handleBulkAddQuestions = async (titles: string[]) => {
-    if (!form) return;
-    try {
-      for (const title of titles) {
-        const newQ = await createQuestion(form.id, "short_text");
-        await updateQuestion(newQ.id, { title });
-      }
-      await loadFormData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleUpdateQuestion = async (updatedData: Partial<Question>) => {
+  /** Debounced so typing a title is one request, not one per keystroke. */
+  const handleUpdateQuestion = (patch: Partial<Question>) => {
     if (!form || !activeQuestionId) return;
-    const questions = form.questions || [];
-    const updatedQuestions = questions.map((q) =>
-      q.id === activeQuestionId ? { ...q, ...updatedData } : q
+    const questionId = activeQuestionId;
+
+    setForm({
+      ...form,
+      questions: (form.questions ?? []).map((q) =>
+        q.id === questionId ? { ...q, ...patch } : q
+      ),
+    });
+
+    if (saveTimers.has(questionId)) clearTimeout(saveTimers.get(questionId));
+    saveTimers.set(
+      questionId,
+      setTimeout(async () => {
+        saveTimers.delete(questionId);
+        try {
+          await updateQuestion(questionId, patch);
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Could not save that question.");
+        }
+      }, SAVE_DEBOUNCE_MS)
     );
-    setForm({ ...form, questions: updatedQuestions });
+  };
 
+  const handleDuplicateQuestion = async (questionId: string) => {
     try {
-      await updateQuestion(activeQuestionId, updatedData);
-    } catch (err) {
-      console.error(err);
+      const duplicate = await duplicateQuestion(questionId);
+      await loadForm();
+      setActiveQuestionId(duplicate.id);
+      toast.success("Question duplicated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not duplicate that question.");
     }
   };
 
-  const handleDuplicateQuestion = async (qId: string) => {
-    try {
-      const dup = await duplicateQuestion(qId);
-      await loadFormData();
-      setActiveQuestionId(dup.id);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleDeleteQuestion = async (qId: string) => {
+  const handleDeleteQuestion = async (questionId: string) => {
     if (!form) return;
     try {
-      await deleteQuestion(qId);
-      const remaining = (form.questions || []).filter((q) => q.id !== qId);
+      await deleteQuestion(questionId);
+      const remaining = (form.questions ?? []).filter((q) => q.id !== questionId);
       setForm({ ...form, questions: remaining });
-      if (activeQuestionId === qId && remaining.length > 0) {
-        setActiveQuestionId(remaining[0].id);
-      }
-    } catch (err) {
-      console.error(err);
+      if (activeQuestionId === questionId) setActiveQuestionId(remaining[0]?.id ?? null);
+      toast.success("Question deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete that question.");
     }
   };
 
-  const handleReorder = async (newQuestions: Question[]) => {
+  const handleReorder = async (questions: Question[]) => {
     if (!form) return;
-    setForm({ ...form, questions: newQuestions });
+    const previous = form.questions ?? [];
+    setForm({ ...form, questions });
     try {
-      await reorderQuestions(form.id, newQuestions.map((q) => q.id));
-    } catch (err) {
-      console.error(err);
+      await reorderQuestions(form.id, questions.map((q) => q.id));
+    } catch (error) {
+      setForm({ ...form, questions: previous });
+      toast.error(error instanceof Error ? error.message : "Could not reorder questions.");
     }
   };
 
@@ -149,15 +171,16 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
     if (!form) return;
     try {
       const updated = await togglePublishForm(form.id);
-      setForm({ ...form, status: updated.status });
-    } catch (err) {
-      console.error(err);
+      setForm(updated);
+      toast.success(updated.status === "published" ? "Form published" : "Form unpublished");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not change publish status.");
     }
   };
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center text-gray-400 text-sm font-sans">
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-sm text-gray-400">
         Loading builder...
       </div>
     );
@@ -165,87 +188,84 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   if (!form) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center text-red-500 text-sm font-sans">
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-sm text-red-500">
         Form not found.
       </div>
     );
   }
 
-  const activeQuestion =
-    (form.questions || []).find((q) => q.id === activeQuestionId) || null;
-  const activeIndex = (form.questions || []).findIndex(
-    (q) => q.id === activeQuestionId
-  );
+  const questions = form.questions ?? [];
+  const activeQuestion = questions.find((q) => q.id === activeQuestionId) ?? null;
+  const activeIndex = questions.findIndex((q) => q.id === activeQuestionId);
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden font-sans">
+    <div className="flex h-screen flex-col overflow-hidden bg-white">
       <BuilderHeader
         form={form}
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        onTitleChange={handleUpdateFormTitle}
+        onTitleChange={(title) => saveForm({ title })}
       />
 
       {activeTab === "Content" && (
         <div className="flex flex-1 overflow-hidden">
-          {/* Left Pages Sidebar */}
           <BuilderSidebarPages
-            questions={form.questions || []}
+            questions={questions}
             activeQuestionId={activeQuestionId}
             onSelectQuestion={setActiveQuestionId}
-            onAddQuestion={() => setIsAddContentModalOpen(true)}
+            onAddQuestion={() => setIsAddContentOpen(true)}
             onDuplicateQuestion={handleDuplicateQuestion}
             onDeleteQuestion={handleDeleteQuestion}
             onReorder={handleReorder}
           />
 
-          {/* Center Canvas Live Preview */}
           <BuilderCanvas
             question={activeQuestion}
             questionNumber={activeIndex + 1}
+            theme={form.theme}
             onUpdateQuestion={handleUpdateQuestion}
-            onAddQuestion={() => setIsAddContentModalOpen(true)}
+            onAddQuestion={() => setIsAddContentOpen(true)}
           />
 
-          {/* Right Question Settings Inspector */}
-          <BuilderRightPanel
-            question={activeQuestion}
-            onUpdateQuestion={handleUpdateQuestion}
-          />
+          <BuilderRightPanel question={activeQuestion} onUpdateQuestion={handleUpdateQuestion} />
         </div>
       )}
 
-      {activeTab === "Share" && <ShareTabView form={form} />}
-
-      {(activeTab === "Workflow" || activeTab === "Connect") && (
-        <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/60 p-12 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl">
-            {activeTab === "Workflow" ? "⚡" : "🔌"}
-          </div>
-          <h2 className="text-xl font-bold text-gray-900">{activeTab} Settings</h2>
-          <p className="text-sm text-gray-500 max-w-sm">
-            {activeTab} feature configuration is available as a placeholder in this demo.
-          </p>
-          <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full">
-            Coming Soon
-          </span>
-        </div>
+      {activeTab === "Share" && (
+        <ShareTabView form={form} onTogglePublish={handleTogglePublish} />
       )}
 
-      {/* Share / Publish Overlay Modal */}
-      <ShareModal
-        form={form}
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        onTogglePublish={handleTogglePublish}
-      />
+      {activeTab === "Settings" && (
+        <SettingsTabView
+          form={form}
+          onThemeChange={(theme: FormTheme) => saveForm({ theme })}
+          onEndingChange={(ending: FormEnding) => saveForm({ ending })}
+        />
+      )}
 
-      {/* Add Content Modal Catalog */}
+      {activeTab === "Workflow" && (
+        <ComingSoonPanel
+          icon={Workflow}
+          title="Logic & branching"
+          description="Route respondents down different paths based on their answers."
+          features={["Logic jumps", "Conditional branching", "Question groups", "Calculated scores"]}
+        />
+      )}
+
+      {activeTab === "Connect" && (
+        <ComingSoonPanel
+          icon={Plug}
+          title="Integrations"
+          description="Push responses to the tools your team already uses."
+          features={["Webhooks", "Google Sheets", "Slack notifications", "Team collaboration"]}
+        />
+      )}
+
       <AddContentModal
-        isOpen={isAddContentModalOpen}
-        onClose={() => setIsAddContentModalOpen(false)}
-        onSelectType={handleAddQuestionWithType}
-        onBulkAdd={handleBulkAddQuestions}
+        isOpen={isAddContentOpen}
+        onClose={() => setIsAddContentOpen(false)}
+        onSelectType={handleAddQuestion}
+        onBulkAdd={handleBulkAdd}
       />
     </div>
   );

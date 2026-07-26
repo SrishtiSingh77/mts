@@ -1,213 +1,183 @@
-from database import SessionLocal, engine, Base
-import models
-import datetime
+"""Sample data so a fresh clone is immediately usable."""
 
-def seed_database():
+import json
+
+import models
+from database import Base, SessionLocal, engine
+
+DEFAULT_CREATOR = {
+    "id": models.DEFAULT_CREATOR_ID,
+    "name": "Sapphire Studio",
+    "email": "creator@formflow.test",
+}
+
+# Each form: metadata, questions (with inline options), and rows of answers keyed by question index.
+SAMPLE_FORMS = [
+    {
+        "title": "Customer Product Feedback",
+        "description": "Help us improve FormFlow by sharing your valuable feedback!",
+        "status": "published",
+        "share_id": "demo-feedback",
+        "theme": {"color": "#7c3aed", "background": "#fcfcfc", "font": "sans"},
+        "ending": {
+            "title": "Thanks for the feedback!",
+            "description": "Your answers go straight to the product team.",
+            "button_label": "Create a typeform",
+            "show_button": True,
+        },
+        "questions": [
+            ("short_text", "What is your full name?", "Enter your first and last name", True, {}, []),
+            ("email", "What is your work email address?", "We'll send you an exclusive feedback discount", True, {}, []),
+            (
+                "multiple_choice",
+                "Which feature do you use most frequently?",
+                "Select the primary tool in your daily workflow",
+                True,
+                {},
+                ["Form Builder", "Analytics & Reports", "Automated Workflows", "Integrations"],
+            ),
+            ("rating", "How would you rate your overall experience?", "1 star = Poor, 5 stars = Outstanding", True, {"rating_max": 5}, []),
+            ("yes_no", "Would you recommend FormFlow to a colleague?", "", True, {}, []),
+            (
+                "dropdown",
+                "What is your primary role?",
+                "Select your job function",
+                False,
+                {},
+                ["Product Manager", "Software Engineer", "UX Designer", "Marketing / Growth", "Other"],
+            ),
+            ("number", "How many team members use form tools in your company?", "Enter approximate head count", False, {}, []),
+            ("long_text", "What is one improvement we should prioritize next?", "Feel free to share any details or suggestions", False, {}, []),
+        ],
+        "responses": [
+            ["Sarah Connor", "sarah@cyberdyne.io", "Form Builder", "5", "Yes", "Software Engineer", "15", "The drag and drop builder interface is smooth! Would love AI branching."],
+            ["Alex Mercer", "alex.mercer@techcorp.com", "Analytics & Reports", "4", "Yes", "Product Manager", "45", "Export to CSV and Webhooks integration would be fantastic."],
+            ["Elena Rostova", "elena@designhub.co", "Form Builder", "5", "Yes", "UX Designer", "8", "Love the sleek animation transitions during filling!"],
+            ["David Chen", "dchen@growthscale.org", "Automated Workflows", "3", "No", "Marketing / Growth", "20", "Need better mobile preview customization options."],
+            ["Priya Nair", "priya.nair@buildly.dev", "Integrations", "4", "Yes", "Software Engineer", "12", ""],
+        ],
+    },
+    {
+        "title": "Tech Summit 2026 Registration",
+        "description": "Reserve your seat for the annual keynote and workshop tracks.",
+        "status": "published",
+        "share_id": "demo-event",
+        "theme": {"color": "#0f766e", "background": "#f7fdfb", "font": "serif"},
+        "ending": {
+            "title": "You're on the list 🎟️",
+            "description": "A confirmation QR code is on its way to your inbox.",
+            "button_label": "Back to home",
+            "show_button": False,
+        },
+        "questions": [
+            ("short_text", "Attendee name", "Full legal name for badge printing", True, {}, []),
+            ("email", "Email address", "We will send your confirmation QR code here", True, {}, []),
+            (
+                "multiple_choice",
+                "Which track will you attend?",
+                "Select your primary interest",
+                True,
+                {},
+                ["AI & Machine Learning", "Cloud Infrastructure", "Frontend Engineering"],
+            ),
+            ("rating", "How excited are you on a scale of 1 to 10?", "Be honest", False, {"rating_max": 10}, []),
+            ("yes_no", "Do you need a vegetarian meal?", "", True, {}, []),
+            ("long_text", "Anything we should know before you arrive?", "Accessibility needs, dietary notes, anything", False, {}, []),
+        ],
+        "responses": [
+            ["Marcus Hale", "marcus@northwind.io", "Cloud Infrastructure", "9", "No", "Travelling in from Berlin, arriving late on day one."],
+            ["Aditi Sharma", "aditi@quantleap.ai", "AI & Machine Learning", "10", "Yes", ""],
+            ["Tom Okafor", "tom.okafor@pixelforge.studio", "Frontend Engineering", "8", "No", "Would love a hallway track for design systems."],
+        ],
+    },
+    {
+        "title": "Employee Onboarding Checklist",
+        "description": "Internal draft — not published yet.",
+        "status": "draft",
+        "share_id": "demo-onboarding",
+        "theme": {"color": "#c026d3", "background": "#fdf7fd", "font": "sans"},
+        "ending": {
+            "title": "Onboarding submitted",
+            "description": "People Ops will follow up within two working days.",
+            "button_label": "Done",
+            "show_button": False,
+        },
+        "questions": [
+            ("short_text", "What is your preferred first name?", "This is what your teammates will see", True, {}, []),
+            ("dropdown", "Which department are you joining?", "", True, {}, ["Engineering", "Design", "Sales", "People Ops"]),
+            ("number", "How many years of experience do you have?", "", False, {}, []),
+            ("yes_no", "Have you completed the security training?", "", True, {}, []),
+        ],
+        "responses": [],
+    },
+]
+
+
+def seed_database() -> None:
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
     try:
-        # Check if database already has forms
-        existing_forms = db.query(models.Form).count()
-        if existing_forms > 0:
+        if not db.query(models.User).filter(models.User.id == DEFAULT_CREATOR["id"]).first():
+            db.add(models.User(**DEFAULT_CREATOR))
+            db.commit()
+
+        if db.query(models.Form).count() > 0:
             print("Database already seeded.")
             return
 
         print("Seeding database with sample forms and responses...")
-
-        # Form 1: Customer Satisfaction Survey (Published)
-        form1 = models.Form(
-            title="Customer Product Feedback",
-            description="Help us improve FormFlow by sharing your valuable feedback!",
-            status="published",
-            share_id="demo-feedback"
-        )
-        db.add(form1)
+        for spec in SAMPLE_FORMS:
+            _seed_form(db, spec)
         db.commit()
-        db.refresh(form1)
-
-        q1_1 = models.Question(
-            form_id=form1.id,
-            type="short_text",
-            title="What is your full name?",
-            description="Enter your first and last name",
-            is_required=True,
-            position=0
-        )
-        q1_2 = models.Question(
-            form_id=form1.id,
-            type="email",
-            title="What is your work email address?",
-            description="We'll send you an exclusive feedback discount",
-            is_required=True,
-            position=1
-        )
-        q1_3 = models.Question(
-            form_id=form1.id,
-            type="multiple_choice",
-            title="Which feature do you use most frequently?",
-            description="Select the primary tool in your daily workflow",
-            is_required=True,
-            position=2
-        )
-        q1_4 = models.Question(
-            form_id=form1.id,
-            type="rating",
-            title="How would you rate your overall experience?",
-            description="1 star = Poor, 5 stars = Outstanding",
-            is_required=True,
-            position=3,
-            settings='{"max_rating": 5}'
-        )
-        q1_5 = models.Question(
-            form_id=form1.id,
-            type="yes_no",
-            title="Would you recommend FormFlow to a colleague?",
-            description="",
-            is_required=True,
-            position=4
-        )
-        q1_6 = models.Question(
-            form_id=form1.id,
-            type="dropdown",
-            title="What is your primary role?",
-            description="Select your job function",
-            is_required=False,
-            position=5
-        )
-        q1_7 = models.Question(
-            form_id=form1.id,
-            type="number",
-            title="How many team members use form tools in your company?",
-            description="Enter approximate head count",
-            is_required=False,
-            position=6
-        )
-        q1_8 = models.Question(
-            form_id=form1.id,
-            type="long_text",
-            title="What is one improvement we should prioritize next?",
-            description="Feel free to share any details or suggestions",
-            is_required=False,
-            position=7
-        )
-
-        db.add_all([q1_1, q1_2, q1_3, q1_4, q1_5, q1_6, q1_7, q1_8])
-        db.commit()
-
-        # Add options for Multiple Choice (q1_3)
-        options_q3 = ["Form Builder", "Analytics & Reports", "Automated Workflows", "Integrations"]
-        for idx, opt_label in enumerate(options_q3):
-            db.add(models.QuestionOption(question_id=q1_3.id, label=opt_label, position=idx))
-
-        # Add options for Dropdown (q1_6)
-        options_q6 = ["Product Manager", "Software Engineer", "UX Designer", "Marketing / Growth", "Other"]
-        for idx, opt_label in enumerate(options_q6):
-            db.add(models.QuestionOption(question_id=q1_6.id, label=opt_label, position=idx))
-
-        db.commit()
-
-        # Add Sample Responses for Form 1
-        sample_responses_data = [
-            {
-                q1_1.id: "Sarah Connor",
-                q1_2.id: "sarah@cyberdyne.io",
-                q1_3.id: "Form Builder",
-                q1_4.id: "5",
-                q1_5.id: "Yes",
-                q1_6.id: "Software Engineer",
-                q1_7.id: "15",
-                q1_8.id: "The drag and drop builder interface is smooth! Would love AI branching."
-            },
-            {
-                q1_1.id: "Alex Mercer",
-                q1_2.id: "alex.mercer@techcorp.com",
-                q1_3.id: "Analytics & Reports",
-                q1_4.id: "4",
-                q1_5.id: "Yes",
-                q1_6.id: "Product Manager",
-                q1_7.id: "45",
-                q1_8.id: "Export to CSV and Webhooks integration would be fantastic."
-            },
-            {
-                q1_1.id: "Elena Rostova",
-                q1_2.id: "elena@designhub.co",
-                q1_3.id: "Form Builder",
-                q1_4.id: "5",
-                q1_5.id: "Yes",
-                q1_6.id: "UX Designer",
-                q1_7.id: "8",
-                q1_8.id: "Love the sleek animation transitions during filling!"
-            },
-            {
-                q1_1.id: "David Chen",
-                q1_2.id: "dchen@growthscale.org",
-                q1_3.id: "Automated Workflows",
-                q1_4.id: "3",
-                q1_5.id: "No",
-                q1_6.id: "Marketing / Growth",
-                q1_7.id: "20",
-                q1_8.id: "Need better mobile preview customization options."
-            }
-        ]
-
-        for resp_data in sample_responses_data:
-            resp_obj = models.FormResponse(form_id=form1.id)
-            db.add(resp_obj)
-            db.commit()
-            db.refresh(resp_obj)
-
-            for q_id, val in resp_data.items():
-                db.add(models.Answer(response_id=resp_obj.id, question_id=q_id, value=val))
-            db.commit()
-
-        # Form 2: Event Registration (Draft)
-        form2 = models.Form(
-            title="Tech Summit 2026 Registration",
-            description="Draft registration form for annual tech keynote event",
-            status="draft",
-            share_id="demo-event"
-        )
-        db.add(form2)
-        db.commit()
-        db.refresh(form2)
-
-        q2_1 = models.Question(
-            form_id=form2.id,
-            type="short_text",
-            title="Attendee Name",
-            description="Full legal name for badge printing",
-            is_required=True,
-            position=0
-        )
-        q2_2 = models.Question(
-            form_id=form2.id,
-            type="email",
-            title="Email Address",
-            description="We will send confirmation QR code here",
-            is_required=True,
-            position=1
-        )
-        q2_3 = models.Question(
-            form_id=form2.id,
-            type="multiple_choice",
-            title="Which track will you attend?",
-            description="Select your primary interest",
-            is_required=True,
-            position=2
-        )
-        db.add_all([q2_1, q2_2, q2_3])
-        db.commit()
-
-        options_q2_3 = ["AI & Machine Learning", "Cloud Infrastructure", "Frontend Engineering"]
-        for idx, label in enumerate(options_q2_3):
-            db.add(models.QuestionOption(question_id=q2_3.id, label=label, position=idx))
-        db.commit()
-
         print("Database successfully seeded!")
-
     finally:
         db.close()
+
+
+def _seed_form(db, spec: dict) -> None:
+    theme, ending = spec["theme"], spec["ending"]
+    form = models.Form(
+        creator_id=DEFAULT_CREATOR["id"],
+        title=spec["title"],
+        description=spec["description"],
+        status=spec["status"],
+        share_id=spec["share_id"],
+        theme_color=theme["color"],
+        theme_background=theme["background"],
+        theme_font=theme["font"],
+        ending_title=ending["title"],
+        ending_description=ending["description"],
+        ending_button_label=ending["button_label"],
+        ending_show_button=ending["show_button"],
+    )
+    db.add(form)
+    db.flush()
+
+    questions = []
+    for position, (q_type, title, description, required, settings, options) in enumerate(spec["questions"]):
+        question = models.Question(
+            form_id=form.id,
+            type=q_type,
+            title=title,
+            description=description,
+            is_required=required,
+            position=position,
+            settings=json.dumps(settings or {}),
+        )
+        db.add(question)
+        db.flush()
+        for index, label in enumerate(options):
+            db.add(models.QuestionOption(question_id=question.id, label=label, position=index))
+        questions.append(question)
+
+    for row in spec["responses"]:
+        response = models.FormResponse(form_id=form.id)
+        db.add(response)
+        db.flush()
+        for question, value in zip(questions, row):
+            db.add(models.Answer(response_id=response.id, question_id=question.id, value=value))
+
 
 if __name__ == "__main__":
     seed_database()
