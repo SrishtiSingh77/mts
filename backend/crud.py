@@ -1,6 +1,6 @@
 import json
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 import models, schemas
 
 # --- Forms CRUD ---
@@ -16,10 +16,14 @@ def get_forms(db: Session):
     return result
 
 def get_form(db: Session, form_id: str):
-    return db.query(models.Form).filter(models.Form.id == form_id).first()
+    return db.query(models.Form).filter(
+        or_(models.Form.id == form_id, models.Form.share_id == form_id)
+    ).first()
 
 def get_form_by_share_id(db: Session, share_id: str):
-    return db.query(models.Form).filter(models.Form.share_id == share_id).first()
+    return db.query(models.Form).filter(
+        or_(models.Form.share_id == share_id, models.Form.id == share_id)
+    ).first()
 
 def create_form(db: Session, form: schemas.FormCreate):
     db_form = models.Form(
@@ -108,11 +112,14 @@ def delete_form(db: Session, form_id: str):
 # --- Questions CRUD ---
 
 def create_question(db: Session, form_id: str, q_data: schemas.QuestionCreate):
-    max_pos = db.query(func.max(models.Question.position)).filter(models.Question.form_id == form_id).scalar()
+    db_form = get_form(db, form_id)
+    real_form_id = db_form.id if db_form else form_id
+
+    max_pos = db.query(func.max(models.Question.position)).filter(models.Question.form_id == real_form_id).scalar()
     next_pos = (max_pos + 1) if max_pos is not None else 0
 
     new_q = models.Question(
-        form_id=form_id,
+        form_id=real_form_id,
         type=q_data.type,
         title=q_data.title,
         description=q_data.description or "",
@@ -165,7 +172,6 @@ def update_question(db: Session, question_id: str, q_data: schemas.QuestionUpdat
         db_q.settings = q_data.settings
 
     if q_data.options is not None:
-        # Delete existing options and replace with new list
         db.query(models.QuestionOption).filter(models.QuestionOption.question_id == question_id).delete()
         for idx, opt in enumerate(q_data.options):
             db_opt = models.QuestionOption(
@@ -184,7 +190,6 @@ def duplicate_question(db: Session, question_id: str):
     if not db_q:
         return None
     
-    # Increment positions of subsequent questions
     subsequent = db.query(models.Question).filter(
         models.Question.form_id == db_q.form_id,
         models.Question.position > db_q.position
@@ -226,7 +231,6 @@ def delete_question(db: Session, question_id: str):
     db.delete(db_q)
     db.commit()
 
-    # Re-normalize positions
     remaining = db.query(models.Question).filter(
         models.Question.form_id == form_id,
         models.Question.position > pos
@@ -237,10 +241,12 @@ def delete_question(db: Session, question_id: str):
     return True
 
 def reorder_questions(db: Session, form_id: str, ordered_question_ids: list):
+    db_form = get_form(db, form_id)
+    real_form_id = db_form.id if db_form else form_id
     for idx, q_id in enumerate(ordered_question_ids):
         db.query(models.Question).filter(
             models.Question.id == q_id,
-            models.Question.form_id == form_id
+            models.Question.form_id == real_form_id
         ).update({"position": idx})
     db.commit()
     return True
@@ -248,7 +254,10 @@ def reorder_questions(db: Session, form_id: str, ordered_question_ids: list):
 # --- Response CRUD & Analytics ---
 
 def submit_response(db: Session, form_id: str, payload: schemas.SubmitResponseSchema):
-    db_response = models.FormResponse(form_id=form_id)
+    db_form = get_form(db, form_id)
+    real_form_id = db_form.id if db_form else form_id
+
+    db_response = models.FormResponse(form_id=real_form_id)
     db.add(db_response)
     db.commit()
     db.refresh(db_response)
@@ -270,7 +279,10 @@ def delete_responses(db: Session, response_ids: list):
     return True
 
 def get_form_responses(db: Session, form_id: str):
-    responses = db.query(models.FormResponse).filter(models.FormResponse.form_id == form_id).order_by(models.FormResponse.submitted_at.desc()).all()
+    db_form = get_form(db, form_id)
+    real_form_id = db_form.id if db_form else form_id
+
+    responses = db.query(models.FormResponse).filter(models.FormResponse.form_id == real_form_id).order_by(models.FormResponse.submitted_at.desc()).all()
     result = []
     for resp in responses:
         answers_list = []
@@ -292,11 +304,11 @@ def get_form_responses(db: Session, form_id: str):
     return result
 
 def get_form_summary_stats(db: Session, form_id: str):
-    form = db.query(models.Form).filter(models.Form.id == form_id).first()
+    form = get_form(db, form_id)
     if not form:
         return None
 
-    total_responses = db.query(models.FormResponse).filter(models.FormResponse.form_id == form_id).count()
+    total_responses = db.query(models.FormResponse).filter(models.FormResponse.form_id == form.id).count()
 
     questions_summary = []
     for q in form.questions:

@@ -15,6 +15,7 @@ class QuestionOptionSchema(QuestionOptionBase):
     question_id: str
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 
@@ -45,6 +46,7 @@ class QuestionSchema(QuestionBase):
     options: List[QuestionOptionSchema] = []
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 
@@ -70,12 +72,14 @@ class FormSchema(FormBase):
     response_count: Optional[int] = 0
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class FormDetailSchema(FormSchema):
     questions: List[QuestionSchema] = []
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 
@@ -95,6 +99,7 @@ class AnswerSchema(BaseModel):
     question_type: Optional[str] = None
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 class FormResponseSchema(BaseModel):
@@ -104,6 +109,7 @@ class FormResponseSchema(BaseModel):
     answers: List[AnswerSchema] = []
 
     class Config:
+        orm_mode = True
         from_attributes = True
 
 
