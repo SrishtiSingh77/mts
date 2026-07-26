@@ -1,72 +1,98 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Sparkles, HelpCircle, Layers, Users, Zap } from "lucide-react";
+import { ChevronDown, Grid2x2, HelpCircle, Palette, PanelsTopLeft, Users, Workflow } from "lucide-react";
+
 import TypeformLogo from "./TypeformLogo";
 
 interface HeaderProps {
-  activeTab?: string;
+  activeTab?: "Forms" | "Contacts" | "Automations";
 }
+
+const NAV_TABS = [
+  { label: "Forms", icon: PanelsTopLeft, href: "/" },
+  { label: "Contacts", icon: Users, href: null },
+  { label: "Automations", icon: Workflow, href: null },
+] as const;
 
 export default function Header({ activeTab = "Forms" }: HeaderProps) {
   return (
-    <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 select-none">
-      {/* Left side: Workspace & Main Nav */}
-      <div className="flex items-center space-x-6">
-        {/* Workspace Dropdown with Typeform Logo */}
-        <div className="flex items-center space-x-2.5 cursor-pointer hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-colors">
-          <TypeformLogo className="w-5 h-4 text-gray-900" />
-          <span className="font-semibold text-sm text-gray-800">ilobotters</span>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-        </div>
+    <header className="select-none bg-white">
+      {/* Row 1 — organisation bar */}
+      <div className="flex h-[72px] items-center justify-between px-6">
+        <button className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 transition-colors hover:bg-black/[0.03]">
+          <span className="flex items-center">
+            <TypeformLogo className="h-6 w-4 text-ink" />
+            <span className="ml-1 h-8 w-8 rounded-lg bg-gradient-to-br from-[#b57bdc] to-[#9333ea]" />
+          </span>
+          <span className="text-[17px] text-ink">Srishti Singh</span>
+          <ChevronDown className="h-4 w-4 text-muted" />
+        </button>
 
-        {/* Navigation Tabs */}
-        <nav className="flex items-center space-x-1 text-sm font-medium">
-          <Link
-            href="/"
-            className={`px-3 py-4 border-b-2 transition-colors flex items-center space-x-1.5 ${
-              activeTab === "Forms"
-                ? "border-black text-gray-900 font-semibold"
-                : "border-transparent text-gray-500 hover:text-gray-900"
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Forms</span>
-          </Link>
-          <button className="px-3 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-900 flex items-center space-x-1.5">
-            <Users className="w-4 h-4" />
-            <span>Contacts</span>
+        <div className="flex items-center gap-6">
+          <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
+            <Grid2x2 className="h-[18px] w-[18px]" />
+            <span>Integrations</span>
           </button>
-          <button className="px-3 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-900 flex items-center space-x-1.5">
-            <Zap className="w-4 h-4" />
-            <span>Automations</span>
+          <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
+            <Palette className="h-[18px] w-[18px]" />
+            <span>Brand kit</span>
           </button>
-          <button className="px-3 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-900 flex items-center space-x-1.5">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <span>Research Flow</span>
-            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-semibold">Demo</span>
+          <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover">
+            View plans
           </button>
-        </nav>
+          <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
+            <HelpCircle className="h-[22px] w-[22px]" />
+          </button>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0d9a8] text-[13px] font-medium text-[#7a5c1e]">
+            SS
+          </span>
+        </div>
       </div>
 
-      {/* Right side action buttons */}
-      <div className="flex items-center space-x-3">
-        <button className="text-xs font-medium text-gray-600 hover:text-gray-900 flex items-center space-x-1 px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
-          <Layers className="w-3.5 h-3.5" />
-          <span>Integrations</span>
-        </button>
-        <button className="text-xs font-medium text-gray-600 hover:text-gray-900 flex items-center space-x-1 px-2.5 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
-          <span>Brand kit</span>
-        </button>
-        <button className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-sm">
-          View plans
-        </button>
-        <button className="text-gray-500 hover:text-gray-700 p-1.5 rounded-md hover:bg-gray-100">
-          <HelpCircle className="w-4 h-4" />
-        </button>
-        {/* User avatar */}
-        <div className="w-7 h-7 rounded-full bg-amber-200 text-amber-900 font-semibold text-xs flex items-center justify-center border border-amber-300">
-          SS
+      {/* Row 2 — section tabs, active one carries a thick dark underline */}
+      <div className="flex items-end gap-1 border-b border-hair px-6">
+        {NAV_TABS.map(({ label, icon: Icon, href }) => {
+          const isActive = activeTab === label;
+          const inner = (
+            <span
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] transition-colors ${
+                isActive ? "bg-black/[0.04] text-ink" : "text-muted hover:text-ink"
+              }`}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+              <span>{label}</span>
+            </span>
+          );
+
+          return (
+            <div
+              key={label}
+              className={`pb-0 ${isActive ? "border-b-[3px] border-ink" : "border-b-[3px] border-transparent"}`}
+            >
+              {href ? (
+                <Link href={href} className="block pb-2 pt-1">
+                  {inner}
+                </Link>
+              ) : (
+                <button className="block pb-2 pt-1">{inner}</button>
+              )}
+            </div>
+          );
+        })}
+
+        <span className="mx-3 mb-3 h-6 w-px bg-hair" />
+
+        <div className="border-b-[3px] border-transparent">
+          <button className="flex items-center gap-2 pb-2 pt-1">
+            <span className="flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] text-muted transition-colors hover:text-ink">
+              <PanelsTopLeft className="h-[18px] w-[18px]" />
+              <span>Research Flow</span>
+              <span className="rounded-full border border-[#bcd7f5] px-2 py-0.5 text-[12px] text-[#2563a8]">
+                Demo
+              </span>
+            </span>
+          </button>
         </div>
       </div>
     </header>
