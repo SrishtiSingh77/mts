@@ -17,7 +17,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, GripVertical, MoreHorizontal, Copy, Trash2, AlignLeft, Hash, CheckSquare, List, Mail, Star, ToggleLeft } from "lucide-react";
+import { Plus, GripVertical, MoreHorizontal, Copy, Trash2, AlignLeft, Hash, CheckSquare, List, Mail, Star, ToggleLeft, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
 import { Question } from "@/types";
 
 interface SortableQuestionItemProps {
@@ -27,6 +27,8 @@ interface SortableQuestionItemProps {
   onSelect: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   totalQuestions: number;
 }
 
@@ -37,6 +39,8 @@ function SortableQuestionItem({
   onSelect,
   onDuplicate,
   onDelete,
+  onMoveUp,
+  onMoveDown,
   totalQuestions,
 }: SortableQuestionItemProps) {
   const [showMenu, setShowMenu] = useState(false);
@@ -117,8 +121,39 @@ function SortableQuestionItem({
         {showMenu && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-full top-0 ml-1 w-32 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-30 text-xs animate-fade-in"
+            className="absolute left-full top-0 ml-1 w-36 bg-white rounded-xl shadow-xl border border-gray-200 py-1.5 z-30 text-xs animate-fade-in"
           >
+            {/* Context menu items matching Screenshot 5 */}
+            {totalQuestions >= 2 && (
+              <>
+                <button
+                  disabled={index === 0}
+                  onClick={() => {
+                    setShowMenu(false);
+                    onMoveUp();
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-2 text-gray-700 disabled:opacity-40"
+                >
+                  <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+                  <span>Move up</span>
+                </button>
+
+                <button
+                  disabled={index === totalQuestions - 1}
+                  onClick={() => {
+                    setShowMenu(false);
+                    onMoveDown();
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-2 text-gray-700 disabled:opacity-40"
+                >
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                  <span>Move down</span>
+                </button>
+
+                <div className="h-px bg-gray-100 my-1" />
+              </>
+            )}
+
             <button
               onClick={() => {
                 setShowMenu(false);
@@ -126,7 +161,7 @@ function SortableQuestionItem({
               }}
               className="w-full text-left px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-2 text-gray-700"
             >
-              <Copy className="w-3 h-3 text-gray-500" />
+              <Copy className="w-3.5 h-3.5 text-gray-500" />
               <span>Duplicate</span>
             </button>
 
@@ -139,7 +174,7 @@ function SortableQuestionItem({
                 }}
                 className="w-full text-left px-3 py-1.5 hover:bg-red-50 flex items-center space-x-2 text-red-600 font-medium"
               >
-                <Trash2 className="w-3 h-3 text-red-600" />
+                <Trash2 className="w-3.5 h-3.5 text-red-600" />
                 <span>Delete</span>
               </button>
             )}
@@ -186,6 +221,24 @@ export default function BuilderSidebarPages({
     }
   };
 
+  const handleMoveUp = (index: number) => {
+    if (index <= 0) return;
+    const reordered = [...questions];
+    const temp = reordered[index - 1];
+    reordered[index - 1] = reordered[index];
+    reordered[index] = temp;
+    onReorder(reordered);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index >= questions.length - 1) return;
+    const reordered = [...questions];
+    const temp = reordered[index + 1];
+    reordered[index + 1] = reordered[index];
+    reordered[index] = temp;
+    onReorder(reordered);
+  };
+
   return (
     <aside className="w-64 border-r border-gray-200 bg-gray-50/70 p-3 flex flex-col justify-between h-[calc(100vh-3.5rem)] select-none">
       {/* Top Pages List */}
@@ -214,6 +267,8 @@ export default function BuilderSidebarPages({
                   onSelect={() => onSelectQuestion(q.id)}
                   onDuplicate={() => onDuplicateQuestion(q.id)}
                   onDelete={() => onDeleteQuestion(q.id)}
+                  onMoveUp={() => handleMoveUp(idx)}
+                  onMoveDown={() => handleMoveDown(idx)}
                   totalQuestions={questions.length}
                 />
               ))}
@@ -221,7 +276,7 @@ export default function BuilderSidebarPages({
           </SortableContext>
         </DndContext>
 
-        {/* Inline "+ Add content" button matching Screenshot 1 */}
+        {/* Inline "+ Add content" button matching Screenshot 1 & 5 */}
         <button
           onClick={onAddQuestion}
           className="w-full mt-2 py-2 px-3 border border-dashed border-gray-300 hover:border-gray-400 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100 flex items-center justify-center space-x-1.5 transition-all"
@@ -229,6 +284,15 @@ export default function BuilderSidebarPages({
           <Plus className="w-3.5 h-3.5 text-gray-500" />
           <span>Add content</span>
         </button>
+
+        {/* Add Welcome Screen Card matching Screenshot 5 */}
+        <div className="border border-dashed border-gray-200 bg-white/60 rounded-lg p-2 flex items-center justify-between text-xs text-gray-500 hover:border-gray-300 cursor-pointer">
+          <div className="flex items-center space-x-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <span className="text-[11px] font-medium">Add Welcome Screen</span>
+          </div>
+          <Plus className="w-3.5 h-3.5 text-gray-400" />
+        </div>
       </div>
 
       {/* Bottom Endings Card */}

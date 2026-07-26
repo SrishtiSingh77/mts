@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Play, HelpCircle, ChevronRight, Share2, Layers } from "lucide-react";
+import { Play, HelpCircle, ChevronRight, Share2, Layers, BarChart2 } from "lucide-react";
 import { Form } from "@/types";
+
+export type BuilderTab = "Content" | "Workflow" | "Connect" | "Share" | "Results";
 
 interface BuilderHeaderProps {
   form: Form;
-  activeTab: "Content" | "Workflow" | "Connect";
-  setActiveTab: (tab: "Content" | "Workflow" | "Connect") => void;
-  onShareClick: () => void;
+  activeTab: BuilderTab;
+  setActiveTab: (tab: BuilderTab) => void;
   onTitleChange: (newTitle: string) => void;
 }
 
@@ -16,7 +17,6 @@ export default function BuilderHeader({
   form,
   activeTab,
   setActiveTab,
-  onShareClick,
   onTitleChange,
 }: BuilderHeaderProps) {
   return (
@@ -36,13 +36,13 @@ export default function BuilderHeader({
         />
       </div>
 
-      {/* Center Tabs: Content / Workflow / Connect */}
+      {/* Center Tabs: Content / Workflow / Connect / Share / Results */}
       <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
-        {(["Content", "Workflow", "Connect"] as const).map((tab) => (
+        {(["Content", "Workflow", "Connect", "Share", "Results"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3.5 py-1 rounded-lg text-xs font-semibold transition-all ${
               activeTab === tab
                 ? "bg-white text-gray-900 shadow-2xs"
                 : "text-gray-500 hover:text-gray-900"
@@ -55,14 +55,6 @@ export default function BuilderHeader({
 
       {/* Right side buttons */}
       <div className="flex items-center space-x-3">
-        <button
-          onClick={onShareClick}
-          className="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 text-xs font-semibold px-3.5 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-2xs hover:bg-gray-50 transition-all active:scale-95"
-        >
-          <Play className="w-3.5 h-3.5 text-purple-600 fill-purple-600" />
-          <span>Share</span>
-        </button>
-
         <button className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-colors">
           View plans
         </button>

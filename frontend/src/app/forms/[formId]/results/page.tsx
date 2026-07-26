@@ -2,22 +2,33 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { Form, FormResponseData, FormSummary } from "@/types";
 import { fetchForm, fetchFormResponses, fetchFormSummary } from "@/lib/api";
-import { ChevronLeft, BarChart2, Table, Star, CheckCircle, Eye, Calendar, User, X } from "lucide-react";
+import {
+  ChevronLeft,
+  BarChart2,
+  Table,
+  Star,
+  Eye,
+  Calendar,
+  Sparkles,
+  TrendingUp,
+  Filter,
+  Monitor,
+  X,
+  Lock,
+} from "lucide-react";
 
 export default function FormResultsPage({ params }: { params: Promise<{ formId: string }> }) {
   const resolvedParams = use(params);
   const formId = resolvedParams.formId;
-  const router = useRouter();
 
   const [form, setForm] = useState<Form | null>(null);
   const [summary, setSummary] = useState<FormSummary | null>(null);
   const [responses, setResponses] = useState<FormResponseData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"summary" | "responses">("summary");
+  const [subTab, setSubTab] = useState<"insights" | "summary" | "responses">("summary");
   const [selectedResponse, setSelectedResponse] = useState<FormResponseData | null>(null);
 
   useEffect(() => {
@@ -57,15 +68,20 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
     );
   }
 
+  const totalSubmissions = summary?.total_responses ?? responses.length;
+  const mockViews = totalSubmissions > 0 ? totalSubmissions * 2 + 3 : 0;
+  const mockStarts = totalSubmissions > 0 ? totalSubmissions + 2 : 0;
+  const completionRate = mockStarts > 0 ? Math.round((totalSubmissions / mockStarts) * 100) : 0;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans select-none">
       <Header activeTab="Forms" />
 
-      {/* Sub Header Navigation */}
+      {/* Sub Header Navigation matching Screenshot 1 & 2 */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Link
-            href="/"
+            href={`/builder/${form.id}`}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -78,17 +94,32 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
               </span>
             </div>
             <p className="text-xs text-gray-500">
-              Total Submissions: {summary?.total_responses ?? responses.length}
+              Total Submissions: {totalSubmissions}
             </p>
           </div>
         </div>
 
-        {/* Tab Switcher: Summary / Responses */}
+        {/* Sub-tabs: Smart Insights, Insights, Summary, Responses */}
         <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
+          <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-900 flex items-center space-x-1">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <span>Smart Insights</span>
+          </button>
           <button
-            onClick={() => setActiveTab("summary")}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
-              activeTab === "summary"
+            onClick={() => setSubTab("insights")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+              subTab === "insights"
+                ? "bg-white text-gray-900 shadow-2xs"
+                : "text-gray-500 hover:text-gray-900"
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Insights</span>
+          </button>
+          <button
+            onClick={() => setSubTab("summary")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+              subTab === "summary"
                 ? "bg-white text-gray-900 shadow-2xs"
                 : "text-gray-500 hover:text-gray-900"
             }`}
@@ -97,9 +128,9 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
             <span>Summary</span>
           </button>
           <button
-            onClick={() => setActiveTab("responses")}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
-              activeTab === "responses"
+            onClick={() => setSubTab("responses")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all ${
+              subTab === "responses"
                 ? "bg-white text-gray-900 shadow-2xs"
                 : "text-gray-500 hover:text-gray-900"
             }`}
@@ -112,9 +143,82 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
 
       {/* Main Content View */}
       <main className="flex-1 p-8 max-w-6xl mx-auto w-full overflow-y-auto">
-        {activeTab === "summary" ? (
-          /* SUMMARY TAB STATS */
+        {subTab === "insights" && (
+          /* INSIGHTS TAB matching Screenshot 2 */
+          <div className="space-y-8">
+            {/* Filter Row */}
+            <div className="flex items-center space-x-3 text-xs">
+              <button className="flex items-center space-x-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-2xs text-gray-700">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>All time</span>
+              </button>
+              <button className="flex items-center space-x-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-2xs text-gray-700">
+                <Monitor className="w-3.5 h-3.5" />
+                <span>All devices</span>
+              </button>
+            </div>
+
+            {/* Big Picture Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Big picture</h2>
+              <div className="grid grid-cols-5 gap-4">
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-2xs space-y-1">
+                  <span className="text-xs font-medium text-gray-400">Views</span>
+                  <p className="text-3xl font-extrabold text-gray-900">{mockViews}</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-2xs space-y-1">
+                  <span className="text-xs font-medium text-gray-400">Starts</span>
+                  <p className="text-3xl font-extrabold text-gray-900">{mockStarts}</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-2xs space-y-1">
+                  <span className="text-xs font-medium text-gray-400">Submissions</span>
+                  <p className="text-3xl font-extrabold text-purple-600">{totalSubmissions}</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-2xs space-y-1">
+                  <span className="text-xs font-medium text-gray-400">Completion rate</span>
+                  <p className="text-3xl font-extrabold text-gray-900">
+                    {mockStarts > 0 ? `${completionRate}%` : "—"}
+                  </p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-2xs space-y-1">
+                  <span className="text-xs font-medium text-gray-400">Time to complete</span>
+                  <p className="text-3xl font-extrabold text-gray-900">
+                    {totalSubmissions > 0 ? "1m 12s" : "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Question Dropoff insights banner */}
+            <div className="bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-8 flex items-center justify-between">
+              <div className="space-y-2 max-w-lg">
+                <h3 className="text-lg font-bold text-emerald-950">Question-by-question insights</h3>
+                <p className="text-xs text-emerald-800 leading-relaxed">
+                  See where respondents drop off—the first step to optimizing your form questions for higher completion rates.
+                </p>
+                <button className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm">
+                  Upgrade plan
+                </button>
+              </div>
+              <div className="w-48 h-28 rounded-xl bg-white border border-emerald-200 p-3 flex flex-col justify-center text-center space-y-1 shadow-2xs">
+                <span className="text-xs font-bold text-gray-800">Completion Funnel</span>
+                <span className="text-[10px] text-gray-400">100% → 85% → 72%</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {subTab === "summary" && (
+          /* SUMMARY TAB STATS matching Screenshot 1 */
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-extrabold text-gray-900">Summary</h2>
+              <button className="flex items-center space-x-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-lg text-xs font-medium text-gray-700 shadow-2xs">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filters</span>
+              </button>
+            </div>
+
             {summary?.questions_summary.map((q, idx) => (
               <div
                 key={q.question_id}
@@ -128,7 +232,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                     <h3 className="text-base font-bold text-gray-900">{q.question_title}</h3>
                   </div>
                   <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border">
-                    {q.total_answers} answers
+                    {q.total_answers} out of {totalSubmissions} answered
                   </span>
                 </div>
 
@@ -175,7 +279,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                       <div className="flex items-center text-amber-500 space-x-1">
                         <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
                         <span className="text-2xl font-extrabold text-gray-900">{q.avg_rating}</span>
-                        <span className="text-xs text-gray-500">/ 5 avg</span>
+                        <span className="text-xs text-gray-500">/ 5 average rating</span>
                       </div>
                     </div>
                   </div>
@@ -219,7 +323,9 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
               </div>
             ))}
           </div>
-        ) : (
+        )}
+
+        {subTab === "responses" && (
           /* RESPONSES TAB TABLE */
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">

@@ -2,12 +2,13 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import BuilderHeader from "@/components/Builder/BuilderHeader";
+import BuilderHeader, { BuilderTab } from "@/components/Builder/BuilderHeader";
 import BuilderSidebarPages from "@/components/Builder/BuilderSidebarPages";
 import BuilderCanvas from "@/components/Builder/BuilderCanvas";
 import BuilderRightPanel from "@/components/Builder/BuilderRightPanel";
 import ShareModal from "@/components/Builder/ShareModal";
 import AddContentModal from "@/components/Builder/AddContentModal";
+import ShareTabView from "@/components/Builder/ShareTabView";
 import { Form, Question, QuestionType } from "@/types";
 import {
   fetchForm,
@@ -27,7 +28,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"Content" | "Workflow" | "Connect">("Content");
+  const [activeTab, setActiveTab] = useState<BuilderTab>("Content");
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
@@ -51,6 +52,14 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
   useEffect(() => {
     loadFormData();
   }, [formId]);
+
+  const handleTabChange = (tab: BuilderTab) => {
+    if (tab === "Results") {
+      router.push(`/forms/${formId}/results`);
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   const handleUpdateFormTitle = async (newTitle: string) => {
     if (!form) return;
@@ -148,7 +157,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
+      <div className="h-screen bg-gray-50 flex items-center justify-center text-gray-400 text-sm font-sans">
         Loading builder...
       </div>
     );
@@ -156,7 +165,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   if (!form) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center text-red-500 text-sm">
+      <div className="h-screen bg-gray-50 flex items-center justify-center text-red-500 text-sm font-sans">
         Form not found.
       </div>
     );
@@ -173,12 +182,11 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
       <BuilderHeader
         form={form}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onShareClick={() => setIsShareModalOpen(true)}
+        setActiveTab={handleTabChange}
         onTitleChange={handleUpdateFormTitle}
       />
 
-      {activeTab === "Content" ? (
+      {activeTab === "Content" && (
         <div className="flex flex-1 overflow-hidden">
           {/* Left Pages Sidebar */}
           <BuilderSidebarPages
@@ -205,8 +213,11 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
             onUpdateQuestion={handleUpdateQuestion}
           />
         </div>
-      ) : (
-        /* Workflow / Connect Tab Placeholders */
+      )}
+
+      {activeTab === "Share" && <ShareTabView form={form} />}
+
+      {(activeTab === "Workflow" || activeTab === "Connect") && (
         <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/60 p-12 text-center space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xl">
             {activeTab === "Workflow" ? "⚡" : "🔌"}
