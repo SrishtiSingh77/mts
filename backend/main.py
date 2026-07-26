@@ -11,9 +11,11 @@ import models
 import schemas
 import validation
 from database import engine, get_db
+from migrations import ensure_schema
 from seed import seed_database
 
 models.Base.metadata.create_all(bind=engine)
+ensure_schema(engine)  # add columns an older database is missing
 seed_database()
 
 app = FastAPI(title="Typeform Clone API", version="1.1.0")
