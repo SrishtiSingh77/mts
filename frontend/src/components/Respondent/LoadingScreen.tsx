@@ -1,15 +1,17 @@
 import TypeformLogo from "@/components/TypeformLogo";
 
+/** Matches Typeform's public splash: wordmark over a two-tone progress rule. */
 export default function LoadingScreen() {
   return (
-    <div className="flex h-screen select-none flex-col items-center justify-center space-y-3 bg-[#fcfcfc]">
-      <span className="text-xs font-medium text-gray-400">powered by</span>
-      <div className="flex items-center space-x-2">
-        <TypeformLogo className="h-4 w-5 text-gray-900" />
-        <h2 className="text-xl font-bold tracking-tight text-gray-900">Typeform</h2>
+    <div className="flex h-screen select-none flex-col items-center justify-center bg-stage">
+      <span className="text-[13px] text-muted">powered by</span>
+      <div className="mt-0.5 flex items-center gap-1.5">
+        <TypeformLogo className="h-4 w-5 text-ink" />
+        <span className="text-[24px] font-bold tracking-tight text-ink">Typeform</span>
       </div>
-      <div className="h-1 w-44 overflow-hidden rounded-full bg-gray-200">
-        <div className="h-full w-3/4 animate-pulse rounded-full bg-gray-900" />
+      <div className="mt-3 flex h-[3px] w-[196px] overflow-hidden">
+        <span className="h-full flex-1 bg-[#b9b9bf]" />
+        <span className="h-full flex-1 bg-ink" />
       </div>
     </div>
   );

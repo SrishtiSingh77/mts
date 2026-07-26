@@ -1,5 +1,7 @@
 "use client";
 
+import { Check } from "lucide-react";
+
 import { AnswerInputProps } from "../types";
 
 const ADVANCE_DELAY_MS = 320;
@@ -18,7 +20,7 @@ export default function YesNoAnswerInput({
   };
 
   return (
-    <div className="flex max-w-xs items-center space-x-4">
+    <div className="max-w-[280px] space-y-2.5">
       {CHOICES.map((choice) => {
         const isSelected = value === choice;
         return (
@@ -29,24 +31,25 @@ export default function YesNoAnswerInput({
             onClick={() => select(choice)}
             style={
               isSelected
-                ? { borderColor: accent, backgroundColor: `${accent}14`, color: accent }
-                : undefined
+                ? { borderColor: accent, backgroundColor: `${accent}12`, color: accent }
+                : { borderColor: `${accent}55` }
             }
-            className={`flex flex-1 items-center justify-center space-x-2 rounded-2xl border-2 px-6 py-3.5 text-sm font-bold transition-all disabled:cursor-not-allowed ${
-              isSelected
-                ? "shadow-sm"
-                : "border-gray-200 bg-white text-gray-800 hover:border-gray-300"
-            }`}
+            className="flex w-full items-center justify-between rounded-md border bg-white px-4 py-3 text-left text-[17px] text-ink transition-colors hover:bg-black/[0.02] disabled:cursor-not-allowed"
           >
-            <span
-              style={isSelected ? { backgroundColor: accent, color: "#fff" } : undefined}
-              className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold ${
-                isSelected ? "" : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {choice.charAt(0)}
+            <span className="flex items-center gap-3">
+              <span
+                style={
+                  isSelected
+                    ? { backgroundColor: accent, borderColor: accent, color: "#fff" }
+                    : { borderColor: `${accent}55`, color: accent }
+                }
+                className="flex h-6 w-6 items-center justify-center rounded border text-[13px] font-medium"
+              >
+                {choice.charAt(0)}
+              </span>
+              <span>{choice}</span>
             </span>
-            <span>{choice}</span>
+            {isSelected && <Check className="h-[18px] w-[18px]" style={{ color: accent }} />}
           </button>
         );
       })}

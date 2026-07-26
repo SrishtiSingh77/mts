@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-
 import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 import PoweredByFooter from "./PoweredByFooter";
@@ -16,39 +14,38 @@ export default function WelcomeScreen({ form, onStart }: WelcomeScreenProps) {
   const questionCount = form.questions?.length ?? 0;
 
   return (
-    <div
-      style={themeStyles(form.theme)}
-      className="flex min-h-screen flex-col justify-between p-8"
-    >
-      <div className="animate-fade-in mx-auto flex max-w-2xl flex-1 flex-col items-center justify-center space-y-6 text-center">
-        <div
-          style={{ backgroundColor: accent }}
-          className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-bold text-white shadow-lg"
-        >
-          {form.title.charAt(0).toUpperCase()}
+    <div style={themeStyles(form.theme)} className="flex min-h-screen flex-col">
+      <div className="flex flex-1 items-center px-6 sm:px-[12%]">
+        <div className="animate-fade-in w-full max-w-[820px]">
+          <h1 className="text-[32px] leading-tight text-ink sm:text-[40px]">{form.title}</h1>
+
+          {form.description && (
+            <p className="mt-4 max-w-[620px] text-[18px] leading-relaxed text-muted">
+              {form.description}
+            </p>
+          )}
+
+          <div className="mt-9 flex items-center gap-4">
+            <button
+              onClick={onStart}
+              style={{ backgroundColor: accent }}
+              className="rounded-md px-7 py-3 text-[17px] font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+            >
+              Start
+            </button>
+            <span className="hidden text-[13px] text-muted sm:inline">
+              press <span className="font-bold text-ink">Enter ↵</span>
+            </span>
+          </div>
+
+          <p className="mt-6 text-[13px] text-muted">
+            {questionCount} question{questionCount === 1 ? "" : "s"} · takes about{" "}
+            {Math.max(1, Math.round(questionCount * 0.25))} min
+          </p>
         </div>
-
-        <h1 className="text-3xl font-extrabold leading-tight text-gray-900">{form.title}</h1>
-
-        {form.description && (
-          <p className="max-w-lg text-base leading-relaxed text-gray-600">{form.description}</p>
-        )}
-
-        <button
-          onClick={onStart}
-          className="flex cursor-pointer items-center space-x-2 rounded-2xl bg-[#262627] px-8 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-black active:scale-95"
-        >
-          <span>Start</span>
-          <ArrowRight className="h-5 w-5" />
-        </button>
-
-        <p className="text-xs text-gray-400">
-          {questionCount} question{questionCount === 1 ? "" : "s"} · takes about{" "}
-          {Math.max(1, Math.round(questionCount * 0.25))} min
-        </p>
       </div>
 
-      <footer className="flex items-center justify-center border-t border-gray-100 py-4">
+      <footer className="flex justify-end px-6 pb-6 sm:px-12">
         <PoweredByFooter />
       </footer>
     </div>

@@ -21,24 +21,25 @@ export default function TextAnswerInput({
   const { placeholder } = questionTypeMeta(question.type);
   const isMultiline = question.type === "long_text";
 
-  const sharedProps = {
+  const shared = {
     value,
     disabled,
     autoFocus,
     placeholder,
     onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange(event.target.value),
+    // Typeform's answer field is a wide hairline that takes the theme's answer colour.
+    style: { borderBottomColor: disabled ? "#d4d4d8" : accent },
     className:
-      "w-full border-b-2 bg-transparent py-2 text-xl text-gray-900 placeholder-gray-300 focus:outline-none disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400",
-    style: { borderBottomColor: disabled ? undefined : accent },
+      "w-full max-w-[820px] border-b-2 bg-transparent pb-2 text-[26px] sm:text-[30px] leading-normal text-ink placeholder:text-faint focus:outline-none disabled:cursor-not-allowed",
   };
 
   if (isMultiline) {
     return (
       <textarea
-        {...sharedProps}
-        rows={4}
-        className={`${sharedProps.className} resize-none text-lg`}
+        {...shared}
+        rows={3}
+        className={`${shared.className} resize-none`}
         // Shift+Enter inserts a newline; plain Enter advances, matching Typeform.
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey && onAdvance) {
@@ -52,7 +53,7 @@ export default function TextAnswerInput({
 
   return (
     <input
-      {...sharedProps}
+      {...shared}
       type={question.type === "number" ? "number" : "text"}
       inputMode={INPUT_MODES[question.type as keyof typeof INPUT_MODES]}
     />

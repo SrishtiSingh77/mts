@@ -2,7 +2,7 @@
 
 import { Check, RotateCcw } from "lucide-react";
 
-import { themeStyles } from "@/lib/theme";
+import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 import PoweredByFooter from "./PoweredByFooter";
 
@@ -19,40 +19,45 @@ export default function EndingScreen({
   onSubmitAnother,
 }: EndingScreenProps) {
   const { ending } = form;
+  const accent = accentOf(form.theme);
 
   return (
-    <div style={themeStyles(form.theme)} className="flex min-h-screen flex-col justify-between p-8">
-      <div className="animate-fade-in mx-auto flex max-w-lg flex-1 flex-col items-center justify-center space-y-6 text-center">
-        <div className="shadow-xs flex h-20 w-20 items-center justify-center rounded-full border-2 border-gray-900 text-gray-900">
-          <Check className="h-10 w-10 stroke-[2.5]" />
-        </div>
-
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900">{ending.title}</h1>
-          <p className="text-sm font-medium text-gray-600">{ending.description}</p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {ending.show_button && (
-            <button
-              onClick={onPrimaryAction}
-              className="cursor-pointer rounded-xl bg-[#262627] px-6 py-3 text-xs font-semibold text-white shadow-md transition-all hover:bg-black active:scale-95"
-            >
-              {ending.button_label}
-            </button>
-          )}
-
-          <button
-            onClick={onSubmitAnother}
-            className="shadow-2xs flex cursor-pointer items-center space-x-1.5 rounded-xl border border-gray-200 bg-white px-4 py-3 text-xs font-semibold text-gray-700 transition-all hover:border-gray-300"
+    <div style={themeStyles(form.theme)} className="flex min-h-screen flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+        <div className="animate-fade-in max-w-[560px]">
+          <span
+            className="mx-auto flex h-[68px] w-[68px] items-center justify-center rounded-full border-2"
+            style={{ borderColor: accent, color: accent }}
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Submit another response</span>
-          </button>
+            <Check className="h-9 w-9 stroke-[2.5]" />
+          </span>
+
+          <h1 className="mt-7 text-[28px] leading-snug text-ink">{ending.title}</h1>
+          <p className="mt-2 text-[17px] text-muted">{ending.description}</p>
+
+          <div className="mt-8 flex items-center justify-center gap-3">
+            {ending.show_button && (
+              <button
+                onClick={onPrimaryAction}
+                style={{ backgroundColor: accent }}
+                className="rounded-md px-6 py-3 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
+              >
+                {ending.button_label}
+              </button>
+            )}
+
+            <button
+              onClick={onSubmitAnother}
+              className="flex items-center gap-2 rounded-md border border-hair bg-white px-5 py-3 text-[15px] text-ink transition-colors hover:bg-panel"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span>Submit another response</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <footer className="flex items-center justify-center border-t border-gray-100 py-4">
+      <footer className="flex justify-end px-6 pb-6 sm:px-12">
         <PoweredByFooter />
       </footer>
     </div>

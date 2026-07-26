@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 import { AnswerInputProps } from "../types";
 
-/** Auto-advance delay so the selected state is visible before the slide transition. */
+/** Delay so the selected state is visible before the slide transition. */
 const ADVANCE_DELAY_MS = 320;
 
 export default function ChoiceAnswerInput({
@@ -16,7 +16,7 @@ export default function ChoiceAnswerInput({
   accent,
 }: AnswerInputProps) {
   if (!question.options.length) {
-    return <p className="text-xs text-gray-400">Add options in the right settings panel</p>;
+    return <p className="text-[15px] text-faint">Add options in the settings panel</p>;
   }
 
   const select = (label: string) => {
@@ -25,7 +25,7 @@ export default function ChoiceAnswerInput({
   };
 
   return (
-    <div className="max-w-md space-y-2.5">
+    <div className="max-w-[560px] space-y-2.5">
       {question.options.map((option, index) => {
         const isSelected = value === option.label;
         return (
@@ -36,27 +36,25 @@ export default function ChoiceAnswerInput({
             onClick={() => select(option.label)}
             style={
               isSelected
-                ? { borderColor: accent, backgroundColor: `${accent}14`, color: accent }
-                : undefined
+                ? { borderColor: accent, backgroundColor: `${accent}12`, color: accent }
+                : { borderColor: `${accent}55` }
             }
-            className={`flex w-full items-center justify-between rounded-2xl border-2 px-5 py-3.5 text-left text-sm font-semibold transition-all disabled:cursor-not-allowed ${
-              isSelected
-                ? "shadow-sm"
-                : "border-gray-200 bg-white text-gray-800 hover:border-gray-300"
-            }`}
+            className="flex w-full items-center justify-between rounded-md border bg-white px-4 py-3 text-left text-[17px] text-ink transition-colors hover:bg-black/[0.02] disabled:cursor-not-allowed"
           >
-            <span className="flex items-center space-x-3">
+            <span className="flex items-center gap-3">
               <span
-                style={isSelected ? { backgroundColor: accent, color: "#fff" } : undefined}
-                className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold ${
-                  isSelected ? "" : "bg-gray-100 text-gray-600"
-                }`}
+                style={
+                  isSelected
+                    ? { backgroundColor: accent, borderColor: accent, color: "#fff" }
+                    : { borderColor: `${accent}55`, color: accent }
+                }
+                className="flex h-6 w-6 items-center justify-center rounded border text-[13px] font-medium"
               >
                 {String.fromCharCode(65 + index)}
               </span>
               <span>{option.label}</span>
             </span>
-            {isSelected && <Check className="h-5 w-5 stroke-[3]" style={{ color: accent }} />}
+            {isSelected && <Check className="h-[18px] w-[18px]" style={{ color: accent }} />}
           </button>
         );
       })}

@@ -10,21 +10,19 @@ export default function DropdownAnswerInput({
   accent,
 }: AnswerInputProps) {
   return (
-    <div className="max-w-md">
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        style={{ borderColor: disabled ? undefined : accent }}
-        className="shadow-xs w-full rounded-2xl border-2 bg-white px-4 py-3.5 text-sm font-semibold text-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
-      >
-        <option value="">Select an option...</option>
-        {question.options.map((option, index) => (
-          <option key={option.id || index} value={option.label}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
+    <select
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      style={{ borderBottomColor: disabled ? "#d4d4d8" : accent }}
+      className="w-full max-w-[560px] appearance-none border-b-2 bg-transparent pb-2 text-[26px] text-ink focus:outline-none disabled:cursor-not-allowed"
+    >
+      <option value="">Type or select an option</option>
+      {question.options.map((option, index) => (
+        <option key={option.id || index} value={option.label}>
+          {option.label}
+        </option>
+      ))}
+    </select>
   );
 }

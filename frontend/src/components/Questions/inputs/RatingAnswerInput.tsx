@@ -5,12 +5,18 @@ import { Star } from "lucide-react";
 import { ratingMax } from "@/lib/validation";
 import { AnswerInputProps } from "../types";
 
-export default function RatingAnswerInput({ question, value, onChange, disabled }: AnswerInputProps) {
+export default function RatingAnswerInput({
+  question,
+  value,
+  onChange,
+  disabled,
+  accent,
+}: AnswerInputProps) {
   const max = ratingMax(question);
   const current = Number(value) || 0;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-2">
+    <div className="flex flex-wrap items-center gap-2.5">
       {Array.from({ length: max }, (_, index) => index + 1).map((step) => {
         const isFilled = current >= step;
         return (
@@ -20,16 +26,16 @@ export default function RatingAnswerInput({ question, value, onChange, disabled 
             disabled={disabled}
             onClick={() => onChange(String(step))}
             aria-label={`Rate ${step} out of ${max}`}
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 transition-all disabled:cursor-not-allowed ${
-              isFilled
-                ? "scale-105 border-amber-400 bg-amber-50 text-amber-500"
-                : "border-gray-200 bg-white text-gray-300 hover:border-amber-300"
-            }`}
+            style={{ color: isFilled ? accent : "#c9c9cf" }}
+            className="transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            <Star className={`h-6 w-6 ${isFilled ? "fill-amber-400 text-amber-400" : ""}`} />
+            <Star className={`h-9 w-9 ${isFilled ? "fill-current" : ""}`} />
           </button>
         );
       })}
+      <span className="ml-2 text-[15px] text-muted">
+        {current ? `${current} of ${max}` : `1 – ${max}`}
+      </span>
     </div>
   );
 }

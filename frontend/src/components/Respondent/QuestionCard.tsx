@@ -32,34 +32,33 @@ export default function QuestionCard({
   const selfAdvancing = SELF_ADVANCING_TYPES.includes(question.type);
 
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-start space-x-3">
-          <span className="pt-0.5 text-xl font-bold sm:text-2xl" style={{ color: accent }}>
-            {number} →
-          </span>
-          <h2 className="text-xl font-bold leading-snug text-gray-900 sm:text-2xl">
-            {question.title}
-            {question.is_required && <span className="ml-1 font-bold text-red-500">*</span>}
-          </h2>
-        </div>
-
-        {question.description && (
-          <p className="pl-8 text-sm text-gray-500">{question.description}</p>
-        )}
+    <div className="w-full">
+      {/* Question line — dark number badge, then the question at display size */}
+      <div className="flex items-start gap-3">
+        <span className="mt-[11px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] bg-ink text-[12px] font-medium text-white">
+          {number}
+        </span>
+        <h2 className="text-[26px] leading-snug text-ink sm:text-[30px]">
+          {question.title}
+          {question.is_required && <span className="ml-1 text-[#c0392b]">*</span>}
+        </h2>
       </div>
 
-      {error && (
-        <div
-          role="alert"
-          className="animate-fade-in ml-8 flex items-center space-x-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-700"
-        >
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-600" />
-          <span>{error}</span>
-        </div>
+      {question.description && (
+        <p className="mt-1.5 pl-[34px] text-[17px] text-muted">{question.description}</p>
       )}
 
-      <div className="space-y-8 pl-8 pt-2">
+      <div className="mt-10 pl-[34px]">
+        {error && (
+          <div
+            role="alert"
+            className="animate-fade-in mb-5 flex w-fit items-center gap-2 rounded-md bg-[#fdf2f1] px-3.5 py-2.5 text-[14px] text-[#a8322a]"
+          >
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
         <QuestionInput
           question={question}
           value={value}
@@ -70,17 +69,18 @@ export default function QuestionCard({
         />
 
         {!selfAdvancing && (
-          <div className="flex items-center space-x-4">
+          <div className="mt-9 flex items-center gap-4">
             <button
               onClick={onAdvance}
               disabled={isSubmitting}
-              className="flex cursor-pointer items-center space-x-2 rounded-xl bg-[#262627] px-6 py-2.5 text-base font-bold text-white shadow-md transition-all hover:bg-black active:scale-95 disabled:opacity-50"
+              style={{ backgroundColor: accent }}
+              className="rounded-md px-6 py-3 text-[17px] font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
             >
-              <span>{isLast ? (isSubmitting ? "Submitting..." : "Submit ✓") : "OK ✓"}</span>
+              {isLast ? (isSubmitting ? "Submitting..." : "Submit") : "OK"}
             </button>
 
-            <span className="hidden text-xs text-gray-400 sm:inline">
-              press <span className="font-bold text-gray-600">Enter ↵</span>
+            <span className="hidden text-[13px] text-muted sm:inline">
+              press <span className="font-bold text-ink">Enter ↵</span>
             </span>
           </div>
         )}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
+import ErrorState from "@/components/ErrorState";
 import EndingScreen from "@/components/Respondent/EndingScreen";
 import FlowFooter from "@/components/Respondent/FlowFooter";
 import LoadingScreen from "@/components/Respondent/LoadingScreen";
@@ -63,15 +64,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
 
   if (loadError || !form) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center space-y-4 bg-[#fcfcfc] p-6 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-bold text-red-600">
-          !
-        </div>
-        <h2 className="text-xl font-bold text-gray-900">{loadError ?? "Form not found"}</h2>
-        <p className="max-w-sm text-xs text-gray-500">
-          The link may be invalid, or the creator has unpublished this form.
-        </p>
-      </div>
+      <ErrorState
+        title="This form isn't available"
+        description="The link may be invalid, or the creator has unpublished it. If someone sent you this link, ask them to publish the form and share it again."
+        action={{ label: "Create your own typeform", href: "/" }}
+      />
     );
   }
 
@@ -92,16 +89,18 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
   return (
     <div
       style={themeStyles(form.theme)}
-      className="flex min-h-screen flex-col justify-between overflow-hidden p-6 sm:p-12"
+      className="flex min-h-screen flex-col overflow-hidden"
     >
-      <div className="fixed left-0 right-0 top-0 z-50 h-1 bg-gray-200">
+      {/* Thin progress rule pinned to the very top */}
+      <div className="fixed left-0 right-0 top-0 z-50 h-[3px] bg-[#e4e4e7]">
         <div
           className="h-full transition-all duration-300 ease-out"
           style={{ width: `${flow.progress}%`, backgroundColor: accent }}
         />
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-1 items-center justify-center">
+      {/* Content sits left-aligned and vertically centred, as in Typeform */}
+      <div className="flex flex-1 items-center px-6 sm:px-[12%]">
         <AnimatePresence mode="wait">
           {flow.current && (
             <motion.div
@@ -110,7 +109,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -24 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="w-full"
+              className="w-full max-w-[820px]"
             >
               <QuestionCard
                 question={flow.current}
