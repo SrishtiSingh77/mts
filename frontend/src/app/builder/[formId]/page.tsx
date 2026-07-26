@@ -269,13 +269,14 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
     }
   };
 
+  /** Previews work on drafts; only the public /f/ link requires publishing. */
   const handlePreview = () => {
     if (!form) return;
-    if (form.status !== "published") {
-      toast.info("Publish the form to open the public preview.");
+    if (!form.questions?.length) {
+      toast.info("Add a question before previewing this form.");
       return;
     }
-    window.open(`/f/${form.share_id}`, "_blank");
+    window.open(`/preview/${form.id}`, "_blank");
   };
 
   if (loading) {
