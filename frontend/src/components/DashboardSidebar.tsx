@@ -27,7 +27,7 @@ export default function DashboardSidebar({
         <div className="px-6 pb-5 pt-5">
           <button
             onClick={onCreateForm}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-chrome py-3 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-chrome py-3 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
           >
             <Plus className="h-[18px] w-[18px]" />
             <span>Create form</span>

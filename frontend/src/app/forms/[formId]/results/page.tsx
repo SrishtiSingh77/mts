@@ -197,7 +197,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
           <span className="rounded-lg bg-black/[0.05] px-3.5 py-1.5 text-[15px] text-ink">Results</span>
         </nav>
 
-        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover">
+        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
           View plans
         </button>
       </header>

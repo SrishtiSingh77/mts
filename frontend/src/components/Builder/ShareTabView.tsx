@@ -60,8 +60,10 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
 
           <button
             onClick={onTogglePublish}
-            className={`shrink-0 rounded-lg px-4 py-2.5 text-[15px] font-medium text-white transition-colors ${
-              isPublished ? "bg-chrome hover:bg-chrome-hover" : "bg-brand-green hover:bg-brand-green-hover"
+            className={`shrink-0 rounded-lg px-4 py-2.5 text-[15px] font-medium text-white transition-colors active:scale-[0.99] ${
+              isPublished
+                ? "bg-chrome hover:bg-chrome-hover active:bg-chrome-pressed"
+                : "bg-brand-green hover:bg-brand-green-hover active:bg-[#178770]"
             }`}
           >
             {isPublished ? "Unpublish" : "Publish"}
@@ -73,7 +75,7 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
           <div className="flex items-center gap-2.5">
             <button
               onClick={handleCopy}
-              className="flex shrink-0 items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:scale-[0.98]"
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.98]"
             >
               {copied ? <Check className="h-[18px] w-[18px]" /> : <Link2 className="h-[18px] w-[18px]" />}
               <span>{copied ? "Copied!" : "Copy link"}</span>

@@ -243,7 +243,7 @@ export default function AddContentModal({
                 <button
                   onClick={submitImport}
                   disabled={!importText.trim()}
-                  className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
+                  className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
                 >
                   Import questions
                 </button>
@@ -268,7 +268,7 @@ export default function AddContentModal({
               <button
                 onClick={submitAi}
                 disabled={isGenerating || !aiPrompt.trim()}
-                className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
+                className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
               >
                 {isGenerating ? "Generating questions..." : "Generate questions"}
               </button>

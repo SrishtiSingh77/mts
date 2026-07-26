@@ -30,7 +30,7 @@ export default function BuilderToolbar({
     <div className="mx-4 mt-1 flex h-[52px] items-center gap-1 rounded-xl bg-panel px-2.5">
       <button
         onClick={onAddContent}
-        className="flex items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
+        className="flex items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
       >
         <Plus className="h-[18px] w-[18px]" />
         <span>Add content</span>

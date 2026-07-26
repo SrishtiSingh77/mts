@@ -38,7 +38,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
             <Palette className="h-[18px] w-[18px]" />
             <span>Brand kit</span>
           </button>
-          <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover">
+          <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
             View plans
           </button>
           <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
