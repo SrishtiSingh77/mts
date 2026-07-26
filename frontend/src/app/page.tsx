@@ -1,32 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Calendar, ChevronDown, Gem, LayoutGrid, List, MoreHorizontal, Puzzle, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
+import { useEffect, useState } from "react";
+
 import DashboardSidebar from "@/components/DashboardSidebar";
 import FormCardContextMenu from "@/components/FormCardContextMenu";
-import { Form } from "@/types";
-import { fetchForms, createForm, updateForm, duplicateForm, deleteForm } from "@/lib/api";
+import Header from "@/components/Header";
 import { useToast } from "@/components/ToastProvider";
-import { MoreHorizontal, Calendar, LayoutList, LayoutGrid, UserPlus, BarChart2 } from "lucide-react";
+import { createForm, deleteForm, duplicateForm, fetchForms, updateForm } from "@/lib/api";
+import { Form } from "@/types";
 
 export default function DashboardPage() {
   const router = useRouter();
   const toast = useToast();
+
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<"list" | "grid">("list");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
-  // Rename Modal State
-  const [renameModalForm, setRenameModalForm] = useState<Form | null>(null);
+  const [renameTarget, setRenameTarget] = useState<Form | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
   const loadForms = async () => {
     try {
       setLoading(true);
-      const data = await fetchForms();
-      setForms(data);
+      setForms(await fetchForms());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load your forms.");
     } finally {
@@ -40,8 +40,8 @@ export default function DashboardPage() {
 
   const handleCreateForm = async () => {
     try {
-      const newForm = await createForm("New form");
-      router.push(`/builder/${newForm.id}`);
+      const form = await createForm("New form");
+      router.push(`/builder/${form.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not create a form.");
     }
@@ -84,214 +84,267 @@ export default function DashboardPage() {
   };
 
   const handleSaveRename = async () => {
-    if (!renameModalForm || !newTitle.trim()) return;
+    if (!renameTarget || !newTitle.trim()) return;
     try {
-      await updateForm(renameModalForm.id, { title: newTitle.trim() });
+      await updateForm(renameTarget.id, { title: newTitle.trim() });
       toast.success("Form renamed");
-      setRenameModalForm(null);
+      setRenameTarget(null);
       loadForms();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not rename that form.");
     }
   };
 
-  const filteredForms = forms.filter((f) =>
-    f.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredForms = forms.filter((form) =>
+    form.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const totalResponses = forms.reduce((sum, form) => sum + form.response_count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header activeTab="Forms" />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Dashboard Sidebar */}
         <DashboardSidebar
-          onCreateForm={handleCreateForm}
-          formCount={forms.length}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onCreateForm={handleCreateForm}
+          formCount={forms.length}
+          responseCount={totalResponses}
         />
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto">
-          {/* Workspace Title & Actions Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold text-gray-900">My workspace</h1>
-              <button className="text-gray-400 hover:text-gray-600">
-                <MoreHorizontal className="w-5 h-5" />
+        <main className="flex-1 overflow-y-auto px-10 py-7">
+          {/* Workspace title row */}
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-[30px] leading-none text-ink">My workspace</h1>
+              <button
+                aria-label="Workspace options"
+                className="rounded-md p-1 text-muted transition-colors hover:bg-panel hover:text-ink"
+              >
+                <MoreHorizontal className="h-5 w-5" />
               </button>
-              <button className="flex items-center space-x-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 bg-white px-2.5 py-1 rounded-md shadow-2xs">
-                <UserPlus className="w-3.5 h-3.5" />
+              <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
+                <UserPlus className="h-[18px] w-[18px]" />
                 <span>Invite</span>
               </button>
+              <Gem className="h-[18px] w-[18px] text-brand-green" />
             </div>
 
-            <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-1.5 text-xs text-gray-600 border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-2xs hover:bg-gray-50">
-                <Calendar className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 rounded-lg border border-hair px-3 py-2 text-[14px] text-ink transition-colors hover:bg-panel">
+                <Calendar className="h-4 w-4" />
                 <span>Date created</span>
+                <ChevronDown className="h-4 w-4 text-muted" />
               </button>
 
-              <div className="flex items-center border border-gray-200 bg-white rounded-lg p-0.5 shadow-2xs">
-                <button className="p-1 rounded bg-gray-100 text-gray-800">
-                  <LayoutList className="w-4 h-4" />
-                </button>
-                <button className="p-1 rounded text-gray-400 hover:text-gray-600">
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
+              <div className="flex items-center rounded-lg border border-hair p-0.5">
+                {[
+                  { id: "list" as const, icon: List, label: "List" },
+                  { id: "grid" as const, icon: LayoutGrid, label: "Grid" },
+                ].map(({ id, icon: Icon, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setView(id)}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[14px] transition-colors ${
+                      view === id ? "bg-panel text-ink" : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Table Header */}
-          <div className="grid grid-cols-12 text-xs font-semibold text-gray-400 px-4 py-2 border-b border-gray-200/80 mb-2">
-            <div className="col-span-5">Form Name</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-2 text-center">Responses</div>
-            <div className="col-span-2">Updated</div>
-            <div className="col-span-1 text-right">Actions</div>
+          {/* Column headers sit above a single hairline, right-aligned */}
+          <div className="flex items-center border-b border-hair pb-2.5 text-[15px] text-muted">
+            <span className="flex-1" />
+            <span className="w-[110px] text-center">Responses</span>
+            <span className="w-[110px] text-center">Completed</span>
+            <span className="w-[130px]">Updated</span>
+            <span className="w-[120px]">Integrations</span>
+            <span className="w-[52px]" />
           </div>
 
-          {/* Forms List */}
           {loading ? (
-            <div className="py-12 text-center text-gray-400 text-sm">Loading forms...</div>
+            <p className="py-14 text-center text-[15px] text-muted">Loading forms...</p>
           ) : filteredForms.length === 0 ? (
-            <div className="py-16 bg-white rounded-xl border border-gray-200/80 text-center space-y-3">
-              <p className="text-gray-500 text-sm">No forms found in this workspace.</p>
+            <div className="space-y-4 py-20 text-center">
+              <p className="text-[17px] text-muted">No forms in this workspace yet.</p>
               <button
                 onClick={handleCreateForm}
-                className="bg-[#262627] hover:bg-black text-white text-xs font-medium px-4 py-2 rounded-lg"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
               >
                 Create your first form
               </button>
             </div>
-          ) : (
-            <div className="space-y-2">
+          ) : view === "list" ? (
+            <div className="mt-4 space-y-2">
               {filteredForms.map((form) => (
-                <div
+                <FormRow
                   key={form.id}
-                  className="grid grid-cols-12 items-center bg-white border border-gray-200/80 hover:border-gray-300 rounded-xl px-4 py-3.5 transition-all shadow-2xs group relative"
+                  form={form}
+                  isMenuOpen={activeMenuId === form.id}
+                  onToggleMenu={() => setActiveMenuId(activeMenuId === form.id ? null : form.id)}
+                  onCloseMenu={() => setActiveMenuId(null)}
+                  onOpen={() => router.push(`/builder/${form.id}`)}
+                  onOpenTab={(formId, tab) => router.push(`/builder/${formId}?tab=${tab}`)}
+                  onResults={() => router.push(`/forms/${form.id}/results`)}
+                  onRename={(target) => {
+                    setRenameTarget(target);
+                    setNewTitle(target.title);
+                  }}
+                  onDuplicate={handleDuplicate}
+                  onDelete={handleDelete}
+                  onCopyLink={handleCopyLink}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredForms.map((form) => (
+                <button
+                  key={form.id}
+                  onClick={() => router.push(`/builder/${form.id}`)}
+                  className="overflow-hidden rounded-xl border border-hair text-left transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
                 >
-                  {/* Form Name & Icon */}
-                  <div
-                    onClick={() => router.push(`/builder/${form.id}`)}
-                    className="col-span-5 flex items-center space-x-3 cursor-pointer"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/90 flex items-center justify-center text-white font-bold text-sm shadow-2xs group-hover:bg-purple-600 transition-colors">
-                      {form.title.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-semibold text-sm text-gray-900 group-hover:text-purple-600 transition-colors">
-                      {form.title}
+                  <span className="block h-28 bg-gradient-to-br from-[#c79ae4] to-[#9333ea]" />
+                  <span className="block px-4 py-3">
+                    <span className="block truncate text-[15px] text-ink">{form.title}</span>
+                    <span className="mt-1 block text-[13px] text-muted">
+                      {form.response_count} response{form.response_count === 1 ? "" : "s"} ·{" "}
+                      {form.status}
                     </span>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="col-span-2">
-                    <span
-                      className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        form.status === "published"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border border-amber-200"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          form.status === "published" ? "bg-emerald-500" : "bg-amber-500"
-                        }`}
-                      />
-                      <span className="capitalize">{form.status}</span>
-                    </span>
-                  </div>
-
-                  {/* Response Count & View Results */}
-                  <div className="col-span-2 text-center flex items-center justify-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      {form.response_count ?? 0}
-                    </span>
-                    <button
-                      onClick={() => router.push(`/forms/${form.id}/results`)}
-                      title="View Results"
-                      className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-purple-600 transition-colors"
-                    >
-                      <BarChart2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Date Updated */}
-                  <div className="col-span-2 text-xs text-gray-500">
-                    {new Date(form.updated_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-
-                  {/* Context Menu Button & Dropdown */}
-                  <div className="col-span-1 flex justify-end relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveMenuId(activeMenuId === form.id ? null : form.id);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-
-                    <FormCardContextMenu
-                      form={form}
-                      isOpen={activeMenuId === form.id}
-                      onClose={() => setActiveMenuId(null)}
-                      onRename={(f) => {
-                        setRenameModalForm(f);
-                        setNewTitle(f.title);
-                      }}
-                      onDuplicate={handleDuplicate}
-                      onDelete={handleDelete}
-                      onCopyLink={handleCopyLink}
-                      onOpenContent={(fId) => router.push(`/builder/${fId}`)}
-                    />
-                  </div>
-                </div>
+                  </span>
+                </button>
               ))}
             </div>
           )}
         </main>
       </div>
 
-      {/* Rename Form Modal */}
-      {renameModalForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md p-6 space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-gray-900">Rename form</h3>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Form Title</label>
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                autoFocus
-              />
-            </div>
-            <div className="flex justify-end space-x-2 pt-2">
+      {renameTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="animate-fade-in w-full max-w-md space-y-5 rounded-2xl bg-white p-7 shadow-2xl">
+            <h3 className="text-[22px] text-ink">Rename form</h3>
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(event) => setNewTitle(event.target.value)}
+              onKeyDown={(event) => event.key === "Enter" && handleSaveRename()}
+              autoFocus
+              className="w-full rounded-lg border border-hair px-3.5 py-2.5 text-[15px] text-ink focus:border-ink focus:outline-none"
+            />
+            <div className="flex justify-end gap-2">
               <button
-                onClick={() => setRenameModalForm(null)}
-                className="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => setRenameTarget(null)}
+                className="rounded-lg px-4 py-2.5 text-[15px] text-muted transition-colors hover:bg-panel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveRename}
-                className="px-4 py-2 text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
               >
-                Save Changes
+                Save
               </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface FormRowProps {
+  form: Form;
+  isMenuOpen: boolean;
+  onToggleMenu: () => void;
+  onCloseMenu: () => void;
+  onOpen: () => void;
+  onOpenTab: (formId: string, tab: "Content" | "Workflow" | "Connect") => void;
+  onResults: () => void;
+  onRename: (form: Form) => void;
+  onDuplicate: (formId: string) => void;
+  onDelete: (formId: string) => void;
+  onCopyLink: (shareId: string) => void;
+}
+
+/** A bordered row card — Typeform renders each form as its own outlined box. */
+function FormRow({
+  form,
+  isMenuOpen,
+  onToggleMenu,
+  onCloseMenu,
+  onOpen,
+  onOpenTab,
+  onResults,
+  onRename,
+  onDuplicate,
+  onDelete,
+  onCopyLink,
+}: FormRowProps) {
+  const isPublished = form.status === "published";
+
+  return (
+    <div className="relative flex items-center rounded-xl border border-hair px-4 py-3 transition-colors hover:border-[#d4d4d8]">
+      <button onClick={onOpen} className="flex flex-1 items-center gap-3.5 overflow-hidden text-left">
+        <span className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-[#c79ae4] to-[#9333ea]" />
+        <span className="truncate text-[15px] font-medium text-ink">{form.title}</span>
+        {!isPublished && (
+          <span className="shrink-0 rounded-full bg-panel px-2 py-0.5 text-[12px] text-muted">
+            Draft
+          </span>
+        )}
+      </button>
+
+      <button onClick={onResults} className="w-[110px] text-center text-[15px] text-ink hover:underline">
+        {form.response_count || <span className="text-faint">–</span>}
+      </button>
+
+      <span className="w-[110px] text-center text-[15px] text-ink">
+        {form.response_count || <span className="text-faint">–</span>}
+      </span>
+
+      <span className="w-[130px] text-[15px] text-muted">
+        {new Date(form.updated_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </span>
+
+      <span className="w-[120px]">
+        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-hair text-muted">
+          <Puzzle className="h-4 w-4" />
+        </span>
+      </span>
+
+      <div className="relative w-[52px] text-right">
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleMenu();
+          }}
+          aria-label="Form options"
+          className="rounded-md p-1.5 text-muted transition-colors hover:bg-panel hover:text-ink"
+        >
+          <MoreHorizontal className="h-5 w-5" />
+        </button>
+
+        <FormCardContextMenu
+          form={form}
+          isOpen={isMenuOpen}
+          onClose={onCloseMenu}
+          onRename={onRename}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
+          onCopyLink={onCopyLink}
+          onOpenTab={onOpenTab}
+        />
+      </div>
     </div>
   );
 }
