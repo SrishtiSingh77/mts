@@ -90,6 +90,28 @@ export function useFormFlow({ form, onError }: UseFormFlowOptions) {
 
   const start = useCallback(() => setStage("questions"), []);
 
+  // Creators can turn the welcome screen off, in which case go straight to Q1.
+  useEffect(() => {
+    if (form && !form.welcome.show) {
+      setStage((current) => (current === "welcome" ? "questions" : current));
+    }
+  }, [form]);
+
+  // Enter starts the form from the welcome screen.
+  useEffect(() => {
+    if (stage !== "welcome") return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        setStage("questions");
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [stage]);
+
   const restart = useCallback(() => {
     answersRef.current = {};
     setAnswers({});

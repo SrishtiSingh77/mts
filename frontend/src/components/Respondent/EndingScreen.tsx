@@ -2,6 +2,7 @@
 
 import { Check, RotateCcw } from "lucide-react";
 
+import SocialShareIcons from "@/components/SocialShareIcons";
 import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 import PoweredByFooter from "./PoweredByFooter";
@@ -34,6 +35,8 @@ export default function EndingScreen({
 
           <h1 className="mt-7 text-[28px] leading-snug text-ink">{ending.title}</h1>
           <p className="mt-2 text-[17px] text-muted">{ending.description}</p>
+
+          {ending.show_social && <SocialShareIcons className="mt-7" />}
 
           <div className="mt-8 flex items-center justify-center gap-3">
             {ending.show_button && (
