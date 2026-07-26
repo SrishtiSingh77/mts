@@ -3,18 +3,18 @@ import { CSSProperties } from "react";
 import { FormTheme, ThemeFont } from "@/types";
 
 export const DEFAULT_THEME: FormTheme = {
-  color: "#7c3aed",
-  background: "#fcfcfc",
+  color: "#262627",
+  background: "#f9f9f9",
   font: "sans",
 };
 
 export const THEME_PRESETS: { name: string; color: string; background: string }[] = [
-  { name: "Typeform Purple", color: "#7c3aed", background: "#fcfcfc" },
-  { name: "Midnight", color: "#6366f1", background: "#f5f5ff" },
+  { name: "Basic", color: "#262627", background: "#f9f9f9" },
+  { name: "Ink", color: "#1e3a8a", background: "#f5f7ff" },
   { name: "Forest", color: "#0f766e", background: "#f7fdfb" },
   { name: "Sunset", color: "#ea580c", background: "#fffaf5" },
-  { name: "Rose", color: "#c026d3", background: "#fdf7fd" },
-  { name: "Slate", color: "#334155", background: "#f8fafc" },
+  { name: "Grape", color: "#7c3aed", background: "#fbf8ff" },
+  { name: "Rose", color: "#be123c", background: "#fff7f8" },
 ];
 
 export const FONT_OPTIONS: { value: ThemeFont; label: string; stack: string }[] = [

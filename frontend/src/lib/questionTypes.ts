@@ -1,24 +1,34 @@
 import {
   AlignLeft,
-  CheckSquare,
+  ChevronDown,
+  CircleSlash,
   FileText,
   Hash,
   List,
   LucideIcon,
   Mail,
   Star,
-  ToggleLeft,
 } from "lucide-react";
 
 import { QuestionType } from "@/types";
+
+export type QuestionGroup = "Contact info" | "Choice" | "Rating & ranking" | "Text & Numbers";
+
+/** Group -> icon tile colour, mirroring Typeform's element catalog. */
+export const GROUP_CHIP: Record<QuestionGroup, string> = {
+  "Contact info": "bg-[#f3ddf5] text-[#7b3b86]",
+  Choice: "bg-[#dbe6fb] text-[#2c4f8f]",
+  "Rating & ranking": "bg-[#d8efdf] text-[#25674a]",
+  "Text & Numbers": "bg-[#dbe6fb] text-[#2c4f8f]",
+};
 
 export interface QuestionTypeMeta {
   type: QuestionType;
   label: string;
   icon: LucideIcon;
-  /** Tailwind text colour for the icon, kept consistent everywhere the type appears. */
+  /** Tailwind text colour for a bare icon, used in compact lists. */
   iconClass: string;
-  group: "Text & Numbers" | "Choice" | "Contact Info" | "Rating & Ranking";
+  group: QuestionGroup;
   placeholder?: string;
 }
 
@@ -28,7 +38,7 @@ export const QUESTION_TYPES: QuestionTypeMeta[] = [
     type: "short_text",
     label: "Short Text",
     icon: AlignLeft,
-    iconClass: "text-gray-600",
+    iconClass: "text-[#2c4f8f]",
     group: "Text & Numbers",
     placeholder: "Type your answer here...",
   },
@@ -36,7 +46,7 @@ export const QUESTION_TYPES: QuestionTypeMeta[] = [
     type: "long_text",
     label: "Long Text",
     icon: FileText,
-    iconClass: "text-gray-600",
+    iconClass: "text-[#2c4f8f]",
     group: "Text & Numbers",
     placeholder: "Type your answer here...",
   },
@@ -44,7 +54,7 @@ export const QUESTION_TYPES: QuestionTypeMeta[] = [
     type: "number",
     label: "Number",
     icon: Hash,
-    iconClass: "text-amber-600",
+    iconClass: "text-[#8a6420]",
     group: "Text & Numbers",
     placeholder: "0",
   },
@@ -52,31 +62,37 @@ export const QUESTION_TYPES: QuestionTypeMeta[] = [
     type: "email",
     label: "Email",
     icon: Mail,
-    iconClass: "text-emerald-600",
-    group: "Contact Info",
+    iconClass: "text-[#7b3b86]",
+    group: "Contact info",
     placeholder: "name@example.com",
   },
   {
     type: "multiple_choice",
     label: "Multiple Choice",
-    icon: CheckSquare,
-    iconClass: "text-purple-600",
+    icon: List,
+    iconClass: "text-[#2c4f8f]",
     group: "Choice",
   },
-  { type: "dropdown", label: "Dropdown", icon: List, iconClass: "text-blue-600", group: "Choice" },
+  {
+    type: "dropdown",
+    label: "Dropdown",
+    icon: ChevronDown,
+    iconClass: "text-[#2c4f8f]",
+    group: "Choice",
+  },
   {
     type: "yes_no",
-    label: "Yes / No",
-    icon: ToggleLeft,
-    iconClass: "text-indigo-600",
+    label: "Yes/No",
+    icon: CircleSlash,
+    iconClass: "text-[#2c4f8f]",
     group: "Choice",
   },
   {
     type: "rating",
-    label: "Rating Scale",
+    label: "Rating",
     icon: Star,
-    iconClass: "text-amber-500",
-    group: "Rating & Ranking",
+    iconClass: "text-[#25674a]",
+    group: "Rating & ranking",
   },
 ];
 
@@ -86,9 +102,21 @@ export function questionTypeMeta(type: QuestionType): QuestionTypeMeta {
   return BY_TYPE.get(type) ?? QUESTION_TYPES[0];
 }
 
-export function questionTypesByGroup(): Record<string, QuestionTypeMeta[]> {
-  return QUESTION_TYPES.reduce<Record<string, QuestionTypeMeta[]>>((groups, meta) => {
-    (groups[meta.group] ??= []).push(meta);
-    return groups;
-  }, {});
+export function chipClassFor(type: QuestionType): string {
+  return GROUP_CHIP[questionTypeMeta(type).group];
+}
+
+/** Catalog order used by the Add content modal. */
+export const GROUP_ORDER: QuestionGroup[] = [
+  "Contact info",
+  "Choice",
+  "Rating & ranking",
+  "Text & Numbers",
+];
+
+export function questionTypesByGroup(): { group: QuestionGroup; metas: QuestionTypeMeta[] }[] {
+  return GROUP_ORDER.map((group) => ({
+    group,
+    metas: QUESTION_TYPES.filter((meta) => meta.group === group),
+  }));
 }
