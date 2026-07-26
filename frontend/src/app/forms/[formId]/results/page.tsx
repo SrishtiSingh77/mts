@@ -1,11 +1,11 @@
 "use client";
 
-import { BarChart2, ChevronLeft, Download, Sparkles, Table, Trash2, TrendingUp, X } from "lucide-react";
+import { ChevronLeft, Download, Gem, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useMemo, useState } from "react";
 
-import Header from "@/components/Header";
+import ErrorState from "@/components/ErrorState";
 import InsightsPanel from "@/components/Results/InsightsPanel";
 import ResponseDetailPanel from "@/components/Results/ResponseDetailPanel";
 import ResponsesTable from "@/components/Results/ResponsesTable";
@@ -24,14 +24,28 @@ import { Form, FormResponseData, FormSummary, Question } from "@/types";
 
 type SubTab = "insights" | "summary" | "responses";
 
-const SUB_TABS: { id: SubTab; label: string; icon: typeof BarChart2 }[] = [
-  { id: "insights", label: "Insights", icon: TrendingUp },
-  { id: "summary", label: "Summary", icon: BarChart2 },
-  { id: "responses", label: "Responses", icon: Table },
+const SUB_TABS: { id: SubTab; label: string }[] = [
+  { id: "insights", label: "Insights" },
+  { id: "summary", label: "Summary" },
+  { id: "responses", label: "Responses" },
+];
+
+const SAMPLE_PEOPLE = [
+  { name: "Meera Krishnan", email: "meera.krishnan@example.in" },
+  { name: "Devansh Gupta", email: "devansh.gupta@example.in" },
+  { name: "Ishita Bose", email: "ishita.bose@example.in" },
+  { name: "Nikhil Raghavan", email: "nikhil.raghavan@example.in" },
+  { name: "Sanya Kulkarni", email: "sanya.kulkarni@example.in" },
+];
+
+const SAMPLE_COMMENTS = [
+  "Filling this out took under a minute — nice flow.",
+  "Would be good to save progress midway through.",
+  "The one-question-at-a-time layout keeps it focused.",
 ];
 
 /** Plausible answer for the test-response generator, valid under the server's rules. */
-function sampleAnswer(question: Question): string {
+function sampleAnswer(question: Question, person: (typeof SAMPLE_PEOPLE)[number]): string {
   switch (question.type) {
     case "multiple_choice":
     case "dropdown":
@@ -43,11 +57,11 @@ function sampleAnswer(question: Question): string {
     case "number":
       return String(Math.floor(Math.random() * 50) + 1);
     case "email":
-      return "test.user@example.com";
+      return person.email;
     case "long_text":
-      return "Generated sample response for testing the results view.";
+      return SAMPLE_COMMENTS[Math.floor(Math.random() * SAMPLE_COMMENTS.length)];
     default:
-      return "Sample test response";
+      return person.name;
   }
 }
 
@@ -99,11 +113,13 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
     if (!form?.questions?.length) return;
     setIsGenerating(true);
     try {
+      // One person per generated response, so name and email stay consistent.
+      const person = SAMPLE_PEOPLE[Math.floor(Math.random() * SAMPLE_PEOPLE.length)];
       await submitFormResponse(
         form.id,
         form.questions.map((question) => ({
           question_id: question.id,
-          value: sampleAnswer(question),
+          value: sampleAnswer(question, person),
         }))
       );
       await loadData();
@@ -132,7 +148,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 text-sm text-gray-400">
+      <div className="flex min-h-screen items-center justify-center bg-panel text-sm text-faint">
         Loading results & statistics...
       </div>
     );
@@ -140,9 +156,12 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
 
   if (!form) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 text-sm text-red-500">
-        Form not found.
-      </div>
+      <ErrorState
+        code="404"
+        title="No results for this form"
+        description="The form was deleted, or this link points at an id that no longer exists."
+        action={{ label: "Back to my forms", href: "/" }}
+      />
     );
   }
 
@@ -150,55 +169,64 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
   const activeResponse = detailIndex !== null ? filteredResponses[detailIndex] : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gray-50">
-      <Header activeTab="Forms" />
-
-      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-        <div className="flex items-center space-x-3">
+    <div className="relative flex min-h-screen flex-col bg-stage">
+      {/* Builder-style top bar so Results reads as a tab of the same form */}
+      <header className="flex h-[68px] shrink-0 items-center justify-between bg-white px-6">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             href={`/builder/${form.id}`}
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="flex items-center gap-2 text-[15px] font-medium text-ink transition-opacity hover:opacity-70"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-[18px] w-[18px]" />
+            <span>Forms</span>
           </Link>
-          <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="text-lg font-bold text-gray-900">{form.title}</h1>
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
-                Results
-              </span>
-            </div>
-            <p className="text-xs text-gray-500">Total submissions: {totalSubmissions}</p>
-          </div>
+          <span className="text-muted">›</span>
+          <span className="truncate text-[15px] font-medium text-ink">{form.title}</span>
         </div>
 
-        <div className="flex items-center space-x-1 rounded-xl bg-gray-100 p-1">
-          <span className="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-gray-400">
-            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-            <span>Smart Insights</span>
-          </span>
-          {SUB_TABS.map(({ id, label, icon: Icon }) => (
+        <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
+          {["Content", "Workflow", "Connect", "Share"].map((tab) => (
             <button
-              key={id}
-              onClick={() => setSubTab(id)}
-              className={`flex items-center space-x-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                subTab === id
-                  ? "shadow-2xs bg-white text-gray-900"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
+              key={tab}
+              onClick={() => router.push(`/builder/${form.id}?tab=${tab}`)}
+              className="rounded-lg px-3.5 py-1.5 text-[15px] text-muted transition-colors hover:text-ink"
             >
-              <Icon className="h-3.5 w-3.5" />
-              <span>
-                {label}
-                {id === "responses" && totalSubmissions > 0 ? ` [${totalSubmissions}]` : ""}
-              </span>
+              {tab}
             </button>
           ))}
-        </div>
+          <span className="rounded-lg bg-black/[0.05] px-3.5 py-1.5 text-[15px] text-ink">Results</span>
+        </nav>
+
+        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover">
+          View plans
+        </button>
+      </header>
+
+      {/* Sub-navigation: underlined tabs, as in the reference */}
+      <div className="flex shrink-0 items-end gap-7 border-b border-hair bg-white px-6">
+        <span className="flex items-center gap-2 pb-3.5 text-[15px] text-faint" title="Coming soon">
+          <span>Smart Insights</span>
+          <Gem className="h-4 w-4 text-[#a7d4c6]" />
+        </span>
+
+        {SUB_TABS.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => setSubTab(id)}
+            className={`border-b-[3px] pb-3 pt-1 text-[15px] transition-colors ${
+              subTab === id
+                ? "border-ink text-ink"
+                : "border-transparent text-muted hover:text-ink"
+            }`}
+          >
+            {label}
+            {id === "responses" && totalSubmissions > 0 ? ` ${totalSubmissions}` : ""}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto p-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto px-8 py-9">
           {subTab === "insights" && (
             <InsightsPanel summary={summary} questionCount={form.questions?.length ?? 0} />
           )}
@@ -206,10 +234,10 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
           {subTab === "summary" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-gray-900">Summary</h2>
+                <h2 className="text-2xl font-extrabold text-ink">Summary</h2>
                 <a
                   href={responsesCsvUrl(form.id)}
-                  className="shadow-2xs flex items-center space-x-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-300"
+                  className="shadow-2xs flex items-center space-x-1.5 rounded-lg border border-hair bg-white px-3 py-1.5 text-xs font-medium text-ink hover:border-[#c9c9cf]"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>Export CSV</span>
@@ -230,8 +258,8 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
           {subTab === "responses" &&
             (responses.length === 0 ? (
               <div className="animate-fade-in mx-auto max-w-md space-y-4 py-24 text-center">
-                <h2 className="text-2xl font-bold text-gray-900">No responses</h2>
-                <p className="text-xs leading-relaxed text-gray-500">
+                <h2 className="text-2xl font-bold text-ink">No responses</h2>
+                <p className="text-xs leading-relaxed text-muted">
                   Share your form to start collecting data, or generate a sample response to test
                   your workflow.
                 </p>
@@ -245,7 +273,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                   <button
                     onClick={handleGenerateTestResponse}
                     disabled={isGenerating}
-                    className="shadow-2xs cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-900 transition-all hover:border-gray-300 disabled:opacity-50"
+                    className="shadow-2xs cursor-pointer rounded-xl border border-hair bg-white px-4 py-2.5 text-xs font-semibold text-ink transition-all hover:border-[#c9c9cf] disabled:opacity-50"
                   >
                     {isGenerating ? "Generating..." : "Generate test response"}
                   </button>
@@ -286,14 +314,14 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
       </div>
 
       {selectedIds.length > 0 && (
-        <div className="animate-fade-in fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 select-none items-center space-x-4 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-xs shadow-2xl">
-          <span className="font-bold text-gray-900">{selectedIds.length} selected</span>
-          <div className="h-4 w-px bg-gray-200" />
+        <div className="animate-fade-in fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 select-none items-center space-x-4 rounded-2xl border border-hair bg-white px-5 py-2.5 text-xs shadow-2xl">
+          <span className="font-bold text-ink">{selectedIds.length} selected</span>
+          <div className="h-4 w-px bg-hair" />
 
           <a
             href={responsesCsvUrl(form.id)}
             title="Export all responses as CSV"
-            className="rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-panel hover:text-ink"
           >
             <Download className="h-4 w-4" />
           </a>
@@ -301,7 +329,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
           <button
             onClick={handleDeleteSelected}
             title="Delete selected"
-            className="rounded-lg p-1.5 text-red-600 transition-colors hover:bg-red-50"
+            className="rounded-lg p-1.5 text-[#c0392b] transition-colors hover:bg-[#fdf2f1]"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -309,7 +337,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
           <button
             onClick={() => setSelectedIds([])}
             title="Clear selection"
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1.5 text-faint transition-colors hover:bg-panel hover:text-muted"
           >
             <X className="h-4 w-4" />
           </button>

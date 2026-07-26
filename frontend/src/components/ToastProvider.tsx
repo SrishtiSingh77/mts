@@ -23,9 +23,9 @@ const ToastContext = createContext<ToastApi | null>(null);
 const AUTO_DISMISS_MS = 3200;
 
 const VARIANTS: Record<ToastVariant, { icon: typeof Info; className: string }> = {
-  success: { icon: CheckCircle2, className: "text-emerald-400" },
+  success: { icon: CheckCircle2, className: "text-[#6ee7b7]" },
   error: { icon: AlertCircle, className: "text-red-400" },
-  info: { icon: Info, className: "text-purple-400" },
+  info: { icon: Info, className: "text-white" },
 };
 
 let nextId = 0;
@@ -70,13 +70,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.18 }}
-                className="pointer-events-auto flex max-w-sm items-start space-x-2.5 rounded-xl border border-gray-700 bg-gray-900 px-4 py-2.5 text-xs font-medium text-white shadow-xl"
+                className="pointer-events-auto flex max-w-sm items-start space-x-2.5 rounded-xl bg-ink px-4 py-2.5 text-xs font-medium text-white shadow-xl"
               >
                 <Icon className={`mt-0.5 h-4 w-4 flex-shrink-0 ${className}`} />
                 <span className="flex-1 leading-relaxed">{message}</span>
                 <button
                   onClick={() => dismiss(id)}
-                  className="mt-0.5 text-gray-500 transition-colors hover:text-white"
+                  className="mt-0.5 text-muted transition-colors hover:text-white"
                   aria-label="Dismiss notification"
                 >
                   <X className="h-3.5 w-3.5" />
