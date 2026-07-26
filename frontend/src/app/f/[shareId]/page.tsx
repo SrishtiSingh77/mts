@@ -7,6 +7,7 @@ import confetti from "canvas-confetti";
 import { ChevronUp, ChevronDown, Check, AlertCircle, ArrowRight, Star } from "lucide-react";
 import { Form, Question } from "@/types";
 import { fetchFormByShareId, submitFormResponse } from "@/lib/api";
+import TypeformLogo from "@/components/TypeformLogo";
 
 export default function PublicFormPage({ params }: { params: Promise<{ shareId: string }> }) {
   const resolvedParams = use(params);
@@ -34,7 +35,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       } catch (err: any) {
         setError("Form not found or no longer available.");
       } finally {
-        // Simulated smooth loading transition matching Screenshot 4
         setTimeout(() => setLoading(false), 800);
       }
     }
@@ -48,13 +48,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     if (!currentQuestion) return true;
     const value = (answers[currentQuestion.id] || "").trim();
 
-    // Required Check
     if (currentQuestion.is_required && !value) {
       setValidationError("Please answer this required question before continuing.");
       return false;
     }
 
-    // Email Check
     if (value && currentQuestion.type === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
@@ -63,7 +61,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       }
     }
 
-    // Number Check
     if (value && currentQuestion.type === "number") {
       if (isNaN(Number(value))) {
         setValidationError("Please enter a valid numeric value.");
@@ -103,7 +100,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       await submitFormResponse(form.id, payload);
       setIsSubmitted(true);
 
-      // Celebratory Confetti
       confetti({
         particleCount: 100,
         spread: 70,
@@ -116,7 +112,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     }
   };
 
-  // Keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (isSubmitted || !hasStarted) return;
@@ -142,7 +137,10 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     return (
       <div className="h-screen bg-[#fcfcfc] flex flex-col items-center justify-center font-sans select-none space-y-3">
         <span className="text-xs text-gray-400 font-medium">powered by</span>
-        <h2 className="text-xl font-bold text-gray-900 tracking-tight">FormFlow</h2>
+        <div className="flex items-center space-x-2">
+          <TypeformLogo className="w-5 h-4 text-gray-900" />
+          <h2 className="text-xl font-bold text-gray-900 tracking-tight">Typeform</h2>
+        </div>
         <div className="w-44 h-1 bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-gray-900 rounded-full animate-pulse w-3/4" />
         </div>
@@ -192,9 +190,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
         </div>
 
         {/* Footer */}
-        <footer className="text-center py-4 border-t border-gray-100">
-          <span className="text-xs font-semibold text-gray-400 tracking-wide uppercase">
-            Powered by <span className="text-purple-600 font-extrabold">FormFlow</span>
+        <footer className="text-center py-4 border-t border-gray-100 flex items-center justify-center space-x-1.5">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center space-x-1.5">
+            <span>Powered by</span>
+            <TypeformLogo className="w-4 h-3 text-gray-900" />
+            <span className="text-gray-900 font-extrabold lowercase">Typeform</span>
           </span>
         </footer>
       </div>
@@ -211,7 +211,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
           </div>
           <div className="space-y-1">
             <h1 className="text-2xl font-bold text-gray-900">
-              Thanks for completing this form
+              Thanks for completing this typeform
             </h1>
             <p className="text-gray-600 text-sm font-medium">
               Now <span className="font-extrabold text-gray-900">create your own</span> — it's free, easy & beautiful
@@ -222,13 +222,15 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
             onClick={() => router.push("/")}
             className="bg-[#262627] hover:bg-black text-white text-xs font-semibold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
           >
-            Create a form
+            Create a typeform
           </button>
         </div>
 
-        <footer className="text-center py-4 border-t border-gray-100">
-          <span className="text-xs font-semibold text-gray-400 tracking-wide uppercase">
-            Powered by <span className="text-purple-600 font-extrabold">FormFlow</span>
+        <footer className="text-center py-4 border-t border-gray-100 flex items-center justify-center space-x-1.5">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center space-x-1.5">
+            <span>Powered by</span>
+            <TypeformLogo className="w-4 h-3 text-gray-900" />
+            <span className="text-gray-900 font-extrabold lowercase">Typeform</span>
           </span>
         </footer>
       </div>
@@ -488,9 +490,11 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
 
       {/* Bottom Footer & Navigation Controls */}
       <footer className="flex items-center justify-between pt-6 border-t border-gray-100 max-w-4xl mx-auto w-full">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-          Powered by <span className="text-purple-600 font-extrabold">FormFlow</span>
-        </span>
+        <div className="flex items-center space-x-1.5 text-xs text-gray-400 font-semibold uppercase tracking-wide">
+          <span>Powered by</span>
+          <TypeformLogo className="w-4 h-3 text-gray-900" />
+          <span className="text-gray-900 font-extrabold lowercase">Typeform</span>
+        </div>
 
         <div className="flex items-center space-x-4">
           <span className="text-xs font-medium text-gray-500">

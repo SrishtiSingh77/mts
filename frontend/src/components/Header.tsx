@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Sparkles, HelpCircle, Layers, Users, Zap, Search } from "lucide-react";
+import { ChevronDown, Sparkles, HelpCircle, Layers, Users, Zap } from "lucide-react";
+import TypeformLogo from "./TypeformLogo";
 
 interface HeaderProps {
   activeTab?: string;
@@ -12,11 +13,9 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
     <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 select-none">
       {/* Left side: Workspace & Main Nav */}
       <div className="flex items-center space-x-6">
-        {/* Workspace Dropdown */}
-        <div className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-colors">
-          <div className="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center text-white font-bold text-xs">
-            i
-          </div>
+        {/* Workspace Dropdown with Typeform Logo */}
+        <div className="flex items-center space-x-2.5 cursor-pointer hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-colors">
+          <TypeformLogo className="w-5 h-4 text-gray-900" />
           <span className="font-semibold text-sm text-gray-800">ilobotters</span>
           <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
         </div>
