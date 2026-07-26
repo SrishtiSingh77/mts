@@ -11,10 +11,12 @@ type Stage = "welcome" | "questions" | "ending";
 interface UseFormFlowOptions {
   form: Form | null;
   onError: (message: string) => void;
+  /** Creator preview: validate and advance as usual, but never persist. */
+  preview?: boolean;
 }
 
 /** Owns the one-question-at-a-time state machine: position, answers, validation, submit. */
-export function useFormFlow({ form, onError }: UseFormFlowOptions) {
+export function useFormFlow({ form, onError, preview }: UseFormFlowOptions) {
   const questions = useMemo<Question[]>(() => form?.questions ?? [], [form]);
 
   const [stage, setStage] = useState<Stage>("welcome");
@@ -39,6 +41,13 @@ export function useFormFlow({ form, onError }: UseFormFlowOptions) {
 
   const submit = useCallback(async () => {
     if (!form) return;
+
+    // A preview must not create a response, and a draft has no public endpoint.
+    if (preview) {
+      setStage("ending");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = questions.map((question) => ({
@@ -63,7 +72,7 @@ export function useFormFlow({ form, onError }: UseFormFlowOptions) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, onError, questions]);
+  }, [form, onError, preview, questions]);
 
   const goNext = useCallback(() => {
     const question = questions[index];
