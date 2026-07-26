@@ -7,8 +7,8 @@ from database import Base, SessionLocal, engine
 
 DEFAULT_CREATOR = {
     "id": models.DEFAULT_CREATOR_ID,
-    "name": "Sapphire Studio",
-    "email": "creator@formflow.test",
+    "name": "Srishti Singh",
+    "email": "singhsrishti01032005@gmail.com",
 }
 
 # Each form: metadata, questions (with inline options), and rows of answers keyed by question index.
@@ -18,7 +18,7 @@ SAMPLE_FORMS = [
         "description": "Help us improve FormFlow by sharing your valuable feedback!",
         "status": "published",
         "share_id": "demo-feedback",
-        "theme": {"color": "#7c3aed", "background": "#fcfcfc", "font": "sans"},
+        "theme": {"color": "#262627", "background": "#f9f9f9", "font": "sans"},
         "ending": {
             "title": "Thanks for the feedback!",
             "description": "Your answers go straight to the product team.",
@@ -50,11 +50,11 @@ SAMPLE_FORMS = [
             ("long_text", "What is one improvement we should prioritize next?", "Feel free to share any details or suggestions", False, {}, []),
         ],
         "responses": [
-            ["Sarah Connor", "sarah@cyberdyne.io", "Form Builder", "5", "Yes", "Software Engineer", "15", "The drag and drop builder interface is smooth! Would love AI branching."],
-            ["Alex Mercer", "alex.mercer@techcorp.com", "Analytics & Reports", "4", "Yes", "Product Manager", "45", "Export to CSV and Webhooks integration would be fantastic."],
-            ["Elena Rostova", "elena@designhub.co", "Form Builder", "5", "Yes", "UX Designer", "8", "Love the sleek animation transitions during filling!"],
-            ["David Chen", "dchen@growthscale.org", "Automated Workflows", "3", "No", "Marketing / Growth", "20", "Need better mobile preview customization options."],
-            ["Priya Nair", "priya.nair@buildly.dev", "Integrations", "4", "Yes", "Software Engineer", "12", ""],
+            ["Vaibhav Kothari", "vaibhav.kothari@example.in", "Form Builder", "5", "Yes", "Software Engineer", "15", "The drag and drop builder is smooth. Would love logic jumps next."],
+            ["Aditi Sharma", "aditi.sharma@quantleap.in", "Analytics & Reports", "4", "Yes", "Product Manager", "45", "CSV export and webhooks would be fantastic additions."],
+            ["Ananya Iyer", "ananya.iyer@designhub.co.in", "Form Builder", "5", "Yes", "UX Designer", "8", "The transitions between questions feel great."],
+            ["Rohan Mehta", "rohan.mehta@growthscale.in", "Automated Workflows", "3", "No", "Marketing / Growth", "20", "Mobile preview needs more customization options."],
+            ["Karthik Reddy", "karthik.reddy@buildly.dev", "Integrations", "4", "Yes", "Software Engineer", "12", ""],
         ],
     },
     {
@@ -85,9 +85,9 @@ SAMPLE_FORMS = [
             ("long_text", "Anything we should know before you arrive?", "Accessibility needs, dietary notes, anything", False, {}, []),
         ],
         "responses": [
-            ["Marcus Hale", "marcus@northwind.io", "Cloud Infrastructure", "9", "No", "Travelling in from Berlin, arriving late on day one."],
-            ["Aditi Sharma", "aditi@quantleap.ai", "AI & Machine Learning", "10", "Yes", ""],
-            ["Tom Okafor", "tom.okafor@pixelforge.studio", "Frontend Engineering", "8", "No", "Would love a hallway track for design systems."],
+            ["Srishti Singh", "srishti.singh@northwind.in", "Cloud Infrastructure", "9", "No", "Travelling in from Pune, arriving late on day one."],
+            ["Priya Nair", "priya.nair@quantleap.in", "AI & Machine Learning", "10", "Yes", ""],
+            ["Arjun Desai", "arjun.desai@pixelforge.in", "Frontend Engineering", "8", "No", "Would love a hallway track on design systems."],
         ],
     },
     {

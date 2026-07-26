@@ -79,8 +79,8 @@ class QuestionSchema(ORMModel, QuestionBase):
 
 # --- Forms ---
 class FormTheme(BaseModel):
-    color: str = "#7c3aed"
-    background: str = "#fcfcfc"
+    color: str = "#262627"
+    background: str = "#f9f9f9"
     font: str = "sans"
 
 

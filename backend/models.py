@@ -23,7 +23,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    name = Column(String, nullable=False, default="Sapphire Studio")
+    name = Column(String, nullable=False, default="Srishti Singh")
     email = Column(String, unique=True, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -46,9 +46,9 @@ class Form(Base):
     status = Column(String, nullable=False, default="draft")  # draft | published
     share_id = Column(String, unique=True, index=True, default=generate_share_id)
 
-    # Theme applied to the respondent flow.
-    theme_color = Column(String, nullable=False, default="#7c3aed")
-    theme_background = Column(String, nullable=False, default="#fcfcfc")
+    # Theme applied to the respondent flow; defaults match Typeform's basic theme.
+    theme_color = Column(String, nullable=False, default="#262627")
+    theme_background = Column(String, nullable=False, default="#f9f9f9")
     theme_font = Column(String, nullable=False, default="sans")  # sans | serif | mono
 
     # Thank-you screen copy.
