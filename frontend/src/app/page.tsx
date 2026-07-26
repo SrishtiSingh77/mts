@@ -2,12 +2,13 @@
 
 import { Calendar, ChevronDown, Gem, LayoutGrid, List, MoreHorizontal, Puzzle, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import DashboardSidebar from "@/components/DashboardSidebar";
 import FormCardContextMenu from "@/components/FormCardContextMenu";
 import Header from "@/components/Header";
 import { useToast } from "@/components/ToastProvider";
+import DropdownMenu, { MenuItem } from "@/components/ui/DropdownMenu";
 import { createForm, deleteForm, duplicateForm, fetchForms, updateForm } from "@/lib/api";
 import { Form } from "@/types";
 
@@ -20,8 +21,10 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState<"list" | "grid">("list");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<Form | null>(null);
   const [newTitle, setNewTitle] = useState("");
+  const workspaceMenuRef = useRef<HTMLButtonElement>(null);
 
   const loadForms = async () => {
     try {
@@ -118,12 +121,54 @@ export default function DashboardPage() {
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-[30px] leading-none text-ink">My workspace</h1>
-              <button
-                aria-label="Workspace options"
-                className="rounded-md p-1 text-muted transition-colors hover:bg-panel hover:text-ink"
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </button>
+
+              <div>
+                <button
+                  ref={workspaceMenuRef}
+                  onClick={() => setWorkspaceMenuOpen(!workspaceMenuOpen)}
+                  aria-label="Workspace options"
+                  aria-haspopup="menu"
+                  aria-expanded={workspaceMenuOpen}
+                  className="rounded-md p-1 text-muted transition-colors hover:bg-panel hover:text-ink"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+
+                <DropdownMenu
+                  anchorRef={workspaceMenuRef}
+                  open={workspaceMenuOpen}
+                  onClose={() => setWorkspaceMenuOpen(false)}
+                  placement="bottom-start"
+                  width={180}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      setWorkspaceMenuOpen(false);
+                      toast.info("A single default workspace ships in this build.");
+                    }}
+                  >
+                    Rename
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setWorkspaceMenuOpen(false);
+                      toast.info("Team workspaces are not part of this build.");
+                    }}
+                  >
+                    Leave
+                  </MenuItem>
+                  <MenuItem
+                    danger
+                    onClick={() => {
+                      setWorkspaceMenuOpen(false);
+                      toast.info("The default workspace cannot be deleted.");
+                    }}
+                  >
+                    Delete
+                  </MenuItem>
+                </DropdownMenu>
+              </div>
+
               <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
                 <UserPlus className="h-[18px] w-[18px]" />
                 <span>Invite</span>
@@ -175,7 +220,7 @@ export default function DashboardPage() {
               <p className="text-[17px] text-muted">No forms in this workspace yet.</p>
               <button
                 onClick={handleCreateForm}
-                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
               >
                 Create your first form
               </button>
@@ -246,7 +291,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={handleSaveRename}
-                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
               >
                 Save
               </button>
@@ -286,6 +331,7 @@ function FormRow({
   onDelete,
   onCopyLink,
 }: FormRowProps) {
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const isPublished = form.status === "published";
 
   return (
@@ -322,13 +368,16 @@ function FormRow({
         </span>
       </span>
 
-      <div className="relative w-[52px] text-right">
+      <div className="w-[52px] text-right">
         <button
+          ref={menuButtonRef}
           onClick={(event) => {
             event.stopPropagation();
             onToggleMenu();
           }}
           aria-label="Form options"
+          aria-haspopup="menu"
+          aria-expanded={isMenuOpen}
           className="rounded-md p-1.5 text-muted transition-colors hover:bg-panel hover:text-ink"
         >
           <MoreHorizontal className="h-5 w-5" />
@@ -336,6 +385,7 @@ function FormRow({
 
         <FormCardContextMenu
           form={form}
+          anchorRef={menuButtonRef}
           isOpen={isMenuOpen}
           onClose={onCloseMenu}
           onRename={onRename}
