@@ -328,14 +328,23 @@ Each is visible in the UI marked *Coming Soon* rather than hidden.
 
 ## Deployment
 
-**Backend — Render.** `render.yaml` at the repo root defines the service. It mounts a 1 GB disk at
-`/data` and sets `DATABASE_URL=sqlite:////data/typeform.db` (four slashes = absolute path) so
-responses survive redeploys — on an ephemeral filesystem the SQLite file is wiped on every deploy.
-Set `ALLOWED_ORIGINS` to the deployed frontend origin. `backend/Dockerfile` is an equivalent
-container path for any other host.
+**See [DEPLOYMENT.md](DEPLOYMENT.md)** for a step-by-step walkthrough — backend on Render,
+frontend on Vercel, and the one decision to make about the database.
 
-**Frontend — Vercel.** Set root directory to `frontend` and
-`NEXT_PUBLIC_API_URL=https://<your-api-host>/api`. Build command and output are the Next.js
-defaults.
+Short version:
+
+| Part | Host | Root directory | Key setting |
+| --- | --- | --- | --- |
+| Backend | Render | `backend` | `ALLOWED_ORIGINS=<vercel url>` |
+| Frontend | Vercel | `frontend` | `NEXT_PUBLIC_API_URL=<render url>/api` |
+
+The database needs no setup: SQLite is created and seeded on first boot. On Render's free tier the
+filesystem is ephemeral, so data resets on redeploy but re-seeds automatically — fine for a demo.
+For durable storage, attach a persistent disk or point `DATABASE_URL` at Postgres; both are covered
+in the guide.
+
+Schema changes are additive-safe: `backend/migrations.py` adds any missing columns at startup, so
+deploying a new column over an existing database does not require wiping it.
 
 Environment variables are documented in `backend/.env.example` and `frontend/.env.example`.
+`render.yaml` and `backend/Dockerfile` cover blueprint and container deploys respectively.

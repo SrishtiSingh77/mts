@@ -1,16 +1,18 @@
+# Optional blueprint. The DEPLOYMENT.md walkthrough sets the same values by hand
+# on the free tier; this file is for the paid persistent-disk setup (Option B).
 services:
   - type: web
     name: typeform-clone-api
     runtime: python
     rootDir: backend
-    plan: starter # a paid plan is required for the persistent disk below
+    plan: starter # the disk below requires a paid plan
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.5"
-      # Absolute sqlite path (four slashes) pointing at the mounted disk.
+      # Four slashes = absolute path onto the mounted disk below.
       - key: DATABASE_URL
         value: sqlite:////data/typeform.db
       # Set to the deployed frontend origin once Vercel has assigned one.
