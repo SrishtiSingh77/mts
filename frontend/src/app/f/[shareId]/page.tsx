@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { ChevronUp, ChevronDown, Check, AlertCircle, ArrowRight, Star } from "lucide-react";
@@ -10,6 +11,7 @@ import { fetchFormByShareId, submitFormResponse } from "@/lib/api";
 export default function PublicFormPage({ params }: { params: Promise<{ shareId: string }> }) {
   const resolvedParams = use(params);
   const shareId = resolvedParams.shareId;
+  const router = useRouter();
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,8 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       } catch (err: any) {
         setError("Form not found or no longer available.");
       } finally {
-        setLoading(false);
+        // Simulated smooth loading transition matching Screenshot 4
+        setTimeout(() => setLoading(false), 800);
       }
     }
     loadForm();
@@ -78,7 +81,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // Submit Form Response
       await handleSubmit();
     }
   };
@@ -100,7 +102,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       }));
       await submitFormResponse(form.id, payload);
       setIsSubmitted(true);
-      
+
       // Celebratory Confetti
       confetti({
         particleCount: 100,
@@ -120,7 +122,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
       if (isSubmitted || !hasStarted) return;
 
       if (e.key === "Enter" && !e.shiftKey) {
-        // Prevent default form behavior and advance
         e.preventDefault();
         handleNext();
       } else if (e.key === "ArrowDown") {
@@ -136,10 +137,15 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex, answers, hasStarted, isSubmitted, questions]);
 
+  /* Loading Screen matching Screenshot 4 */
   if (loading) {
     return (
-      <div className="h-screen bg-[#fcfcfc] flex items-center justify-center text-gray-400 text-sm">
-        Loading form...
+      <div className="h-screen bg-[#fcfcfc] flex flex-col items-center justify-center font-sans select-none space-y-3">
+        <span className="text-xs text-gray-400 font-medium">powered by</span>
+        <h2 className="text-xl font-bold text-gray-900 tracking-tight">FormFlow</h2>
+        <div className="w-44 h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full bg-gray-900 rounded-full animate-pulse w-3/4" />
+        </div>
       </div>
     );
   }
@@ -177,7 +183,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
 
           <button
             onClick={() => setHasStarted(true)}
-            className="bg-[#262627] hover:bg-black text-white font-semibold text-base py-3.5 px-8 rounded-2xl shadow-lg transition-all flex items-center space-x-2 active:scale-95"
+            className="bg-[#262627] hover:bg-black text-white font-semibold text-base py-3.5 px-8 rounded-2xl shadow-lg transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
           >
             <span>Start Form</span>
             <ArrowRight className="w-5 h-5" />
@@ -195,28 +201,28 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     );
   }
 
-  // Thank You Screen
+  /* Thank You Screen matching Screenshot 5 */
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#fcfcfc] flex flex-col justify-between p-8 font-sans">
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-lg mx-auto space-y-6 animate-fade-in">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-md">
-            <Check className="w-10 h-10 stroke-[3]" />
+          <div className="w-20 h-20 rounded-full border-2 border-gray-900 text-gray-900 flex items-center justify-center shadow-xs">
+            <Check className="w-10 h-10 stroke-[2.5]" />
           </div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Thank You!</h1>
-          <p className="text-gray-600 text-sm leading-relaxed">
-            Your response has been recorded successfully. We appreciate your time!
-          </p>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Thanks for completing this form
+            </h1>
+            <p className="text-gray-600 text-sm font-medium">
+              Now <span className="font-extrabold text-gray-900">create your own</span> — it's free, easy & beautiful
+            </p>
+          </div>
+
           <button
-            onClick={() => {
-              setAnswers({});
-              setCurrentIndex(0);
-              setIsSubmitted(false);
-              setHasStarted(false);
-            }}
-            className="text-xs font-semibold text-purple-600 hover:text-purple-700 underline"
+            onClick={() => router.push("/")}
+            className="bg-[#262627] hover:bg-black text-white text-xs font-semibold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
           >
-            Submit another response
+            Create a form
           </button>
         </div>
 
@@ -459,7 +465,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
                   <button
                     onClick={handleNext}
                     disabled={isSubmitting}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-base py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center space-x-2 active:scale-95 disabled:opacity-50"
+                    className="bg-[#262627] hover:bg-black text-white font-bold text-base py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center space-x-2 active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     <span>
                       {currentIndex === questions.length - 1
@@ -482,12 +488,10 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
 
       {/* Bottom Footer & Navigation Controls */}
       <footer className="flex items-center justify-between pt-6 border-t border-gray-100 max-w-4xl mx-auto w-full">
-        {/* Branding Footer */}
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
           Powered by <span className="text-purple-600 font-extrabold">FormFlow</span>
         </span>
 
-        {/* Navigation Arrows & Progress counter */}
         <div className="flex items-center space-x-4">
           <span className="text-xs font-medium text-gray-500">
             {currentIndex + 1} of {questions.length}

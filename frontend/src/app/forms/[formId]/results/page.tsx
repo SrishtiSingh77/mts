@@ -2,9 +2,10 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { Form, FormResponseData, FormSummary } from "@/types";
-import { fetchForm, fetchFormResponses, fetchFormSummary } from "@/lib/api";
+import { fetchForm, fetchFormResponses, fetchFormSummary, submitFormResponse } from "@/lib/api";
 import {
   ChevronLeft,
   BarChart2,
@@ -17,12 +18,17 @@ import {
   Filter,
   Monitor,
   X,
-  Lock,
+  Plus,
+  Quote,
+  Inbox,
+  Share2,
+  Download,
 } from "lucide-react";
 
 export default function FormResultsPage({ params }: { params: Promise<{ formId: string }> }) {
   const resolvedParams = use(params);
   const formId = resolvedParams.formId;
+  const router = useRouter();
 
   const [form, setForm] = useState<Form | null>(null);
   const [summary, setSummary] = useState<FormSummary | null>(null);
@@ -30,27 +36,58 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
   const [loading, setLoading] = useState(true);
   const [subTab, setSubTab] = useState<"insights" | "summary" | "responses">("summary");
   const [selectedResponse, setSelectedResponse] = useState<FormResponseData | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [formData, summaryData, responsesData] = await Promise.all([
+        fetchForm(formId),
+        fetchFormSummary(formId),
+        fetchFormResponses(formId),
+      ]);
+      setForm(formData);
+      setSummary(summaryData);
+      setResponses(responsesData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const [formData, summaryData, responsesData] = await Promise.all([
-          fetchForm(formId),
-          fetchFormSummary(formId),
-          fetchFormResponses(formId),
-        ]);
-        setForm(formData);
-        setSummary(summaryData);
-        setResponses(responsesData);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, [formId]);
+
+  const handleGenerateTestResponse = async () => {
+    if (!form || !form.questions || form.questions.length === 0) return;
+    try {
+      setIsGenerating(true);
+      const mockAnswers = form.questions.map((q) => {
+        let val = "Sample test answer";
+        if (q.type === "multiple_choice" || q.type === "dropdown") {
+          val = q.options?.[0]?.label || "Option 1";
+        } else if (q.type === "yes_no") {
+          val = "Yes";
+        } else if (q.type === "rating") {
+          val = "5";
+        } else if (q.type === "number") {
+          val = "42";
+        } else if (q.type === "email") {
+          val = "test.user@example.com";
+        }
+        return { question_id: q.id, value: val };
+      });
+
+      await submitFormResponse(form.id, mockAnswers);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -77,7 +114,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans select-none">
       <Header activeTab="Forms" />
 
-      {/* Sub Header Navigation matching Screenshot 1 & 2 */}
+      {/* Sub Header Navigation matching Screenshots 1, 2, 3 */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Link
@@ -136,7 +173,14 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
             }`}
           >
             <Table className="w-3.5 h-3.5" />
-            <span>Responses ({responses.length})</span>
+            <span>
+              Responses {totalSubmissions > 0 ? `[${totalSubmissions}]` : ""}
+            </span>
+            {totalSubmissions > 0 && (
+              <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 rounded-full font-bold">
+                +{totalSubmissions}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -144,9 +188,8 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
       {/* Main Content View */}
       <main className="flex-1 p-8 max-w-6xl mx-auto w-full overflow-y-auto">
         {subTab === "insights" && (
-          /* INSIGHTS TAB matching Screenshot 2 */
+          /* INSIGHTS TAB */
           <div className="space-y-8">
-            {/* Filter Row */}
             <div className="flex items-center space-x-3 text-xs">
               <button className="flex items-center space-x-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-2xs text-gray-700">
                 <Calendar className="w-3.5 h-3.5" />
@@ -158,7 +201,6 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
               </button>
             </div>
 
-            {/* Big Picture Section */}
             <div className="space-y-4">
               <h2 className="text-xl font-bold text-gray-900">Big picture</h2>
               <div className="grid grid-cols-5 gap-4">
@@ -189,7 +231,6 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
               </div>
             </div>
 
-            {/* Question Dropoff insights banner */}
             <div className="bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-8 flex items-center justify-between">
               <div className="space-y-2 max-w-lg">
                 <h3 className="text-lg font-bold text-emerald-950">Question-by-question insights</h3>
@@ -200,16 +241,12 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                   Upgrade plan
                 </button>
               </div>
-              <div className="w-48 h-28 rounded-xl bg-white border border-emerald-200 p-3 flex flex-col justify-center text-center space-y-1 shadow-2xs">
-                <span className="text-xs font-bold text-gray-800">Completion Funnel</span>
-                <span className="text-[10px] text-gray-400">100% → 85% → 72%</span>
-              </div>
             </div>
           </div>
         )}
 
         {subTab === "summary" && (
-          /* SUMMARY TAB STATS matching Screenshot 1 */
+          /* SUMMARY TAB STATS */
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-extrabold text-gray-900">Summary</h2>
@@ -285,36 +322,20 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                   </div>
                 )}
 
-                {/* Number Stats */}
-                {q.avg_number !== undefined && (
-                  <div className="grid grid-cols-3 gap-4 pt-1 text-center">
-                    <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
-                      <span className="text-[11px] font-semibold text-gray-400 uppercase">Average</span>
-                      <p className="text-lg font-bold text-gray-900">{q.avg_number}</p>
-                    </div>
-                    <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
-                      <span className="text-[11px] font-semibold text-gray-400 uppercase">Min</span>
-                      <p className="text-lg font-bold text-gray-900">{q.min_number}</p>
-                    </div>
-                    <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
-                      <span className="text-[11px] font-semibold text-gray-400 uppercase">Max</span>
-                      <p className="text-lg font-bold text-gray-900">{q.max_number}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Text Responses List */}
+                {/* Text Responses List with quote cards matching Screenshot 3 */}
                 {q.text_responses && (
-                  <div className="space-y-2 pt-1 max-h-48 overflow-y-auto">
+                  <div className="space-y-2 pt-1">
                     {q.text_responses.length === 0 ? (
-                      <p className="text-xs text-gray-400">No responses recorded yet.</p>
+                      <p className="text-xs text-gray-400 py-4 text-center">No responses recorded yet.</p>
                     ) : (
                       q.text_responses.map((ans, aIdx) => (
                         <div
                           key={aIdx}
-                          className="bg-gray-50 border border-gray-200/80 rounded-xl p-3 text-xs text-gray-800"
+                          className="bg-white border border-gray-200 rounded-xl p-4 text-xs text-gray-800 shadow-2xs space-y-1.5 max-w-sm"
                         >
-                          "{ans}"
+                          <Quote className="w-4 h-4 text-gray-400 rotate-180" />
+                          <p className="font-semibold text-gray-900 text-sm">"{ans}"</p>
+                          <span className="block text-[10px] text-gray-400">Recently submitted</span>
                         </div>
                       ))
                     )}
@@ -326,54 +347,115 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
         )}
 
         {subTab === "responses" && (
-          /* RESPONSES TAB TABLE */
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-sm font-bold text-gray-900">Submitted Responses</h3>
-              <span className="text-xs text-gray-500 font-medium">
-                Click any submission row to view complete answers
-              </span>
-            </div>
-
+          /* RESPONSES TAB matching Screenshots 1 & 2 */
+          <div>
             {responses.length === 0 ? (
-              <div className="p-12 text-center text-gray-400 text-sm">
-                No submissions received yet.
+              /* Empty State matching Screenshot 1 */
+              <div className="py-24 text-center space-y-4 animate-fade-in max-w-md mx-auto">
+                <h2 className="text-2xl font-bold text-gray-900">No responses</h2>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Share your form to start collecting data, or generate sample responses to test your workflow
+                </p>
+                <div className="flex items-center justify-center space-x-3 pt-2">
+                  <button
+                    onClick={() => router.push(`/builder/${form.id}`)}
+                    className="bg-[#262627] hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all"
+                  >
+                    Share your form
+                  </button>
+                  <button
+                    onClick={handleGenerateTestResponse}
+                    disabled={isGenerating}
+                    className="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xs transition-all disabled:opacity-50"
+                  >
+                    {isGenerating ? "Generating..." : "Generate test response"}
+                  </button>
+                </div>
               </div>
             ) : (
-              <table className="w-full text-left text-xs text-gray-700">
-                <thead className="bg-gray-100/70 border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-wider">
-                  <tr>
-                    <th className="px-6 py-3.5">Submission ID</th>
-                    <th className="px-6 py-3.5">Date & Time</th>
-                    <th className="px-6 py-3.5">Answers Preview</th>
-                    <th className="px-6 py-3.5 text-right">View Detail</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {responses.map((resp) => (
-                    <tr
-                      key={resp.id}
-                      onClick={() => setSelectedResponse(resp)}
-                      className="hover:bg-purple-50/40 cursor-pointer transition-colors group"
+              /* Populated Table View matching Screenshot 2 */
+              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden space-y-3">
+                {/* Table Top Controls */}
+                <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50 text-xs">
+                  <div className="flex items-center space-x-3">
+                    <button className="flex items-center space-x-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-gray-800 font-semibold shadow-2xs">
+                      <Inbox className="w-3.5 h-3.5 text-gray-600" />
+                      <span>Responses</span>
+                    </button>
+                    <button className="flex items-center space-x-1.5 text-gray-500 hover:text-gray-900">
+                      <span>Spam [0]</span>
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="Search responses"
+                      className="border border-gray-200 rounded-lg px-3 py-1 text-xs text-gray-700 bg-white focus:outline-none w-44"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={handleGenerateTestResponse}
+                      disabled={isGenerating}
+                      className="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-all"
                     >
-                      <td className="px-6 py-4 font-mono text-xs text-purple-600 font-semibold">
-                        #{resp.id.slice(0, 8)}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {new Date(resp.submitted_at).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 max-w-xs truncate text-gray-800 font-medium">
-                        {resp.answers.map((a) => a.value).filter(Boolean).join(" • ") || "No answers"}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-purple-600 text-gray-600 group-hover:text-white transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </td>
+                      {isGenerating ? "Generating..." : "Generate test response"}
+                    </button>
+                  </div>
+                </div>
+
+                <table className="w-full text-left text-xs text-gray-700">
+                  <thead className="bg-gray-100/70 border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-wider">
+                    <tr>
+                      <th className="px-4 py-3 w-10"></th>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Response type</th>
+                      <th className="px-6 py-3">Answers</th>
+                      <th className="px-6 py-3">Ending</th>
+                      <th className="px-4 py-3 text-right">View Detail</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {responses.map((resp) => (
+                      <tr
+                        key={resp.id}
+                        onClick={() => setSelectedResponse(resp)}
+                        className="hover:bg-purple-50/40 cursor-pointer transition-colors group"
+                      >
+                        <td className="px-4 py-3.5">
+                          <input type="checkbox" className="rounded border-gray-300" />
+                        </td>
+                        <td className="px-4 py-3.5 font-medium text-gray-800">
+                          {new Date(resp.submitted_at).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                            Completed
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5 max-w-xs truncate text-gray-800 font-medium">
+                          {resp.answers.map((a) => a.value).filter(Boolean).join(" • ") || "—"}
+                        </td>
+                        <td className="px-6 py-3.5 text-xs text-gray-500">
+                          <span className="bg-gray-100 px-2 py-0.5 rounded border text-[11px]">
+                            A. Thanks for completing...
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <button className="p-1 rounded bg-gray-100 group-hover:bg-purple-600 text-gray-600 group-hover:text-white transition-colors">
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
