@@ -1,35 +1,22 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { use, useCallback, useEffect, useState } from "react";
-import confetti from "canvas-confetti";
+import { use, useEffect, useState } from "react";
 
 import ErrorState from "@/components/ErrorState";
-import EndingScreen from "@/components/Respondent/EndingScreen";
-import FlowFooter from "@/components/Respondent/FlowFooter";
 import LoadingScreen from "@/components/Respondent/LoadingScreen";
-import QuestionCard from "@/components/Respondent/QuestionCard";
-import WelcomeScreen from "@/components/Respondent/WelcomeScreen";
-import { useToast } from "@/components/ToastProvider";
-import { useFormFlow } from "@/hooks/useFormFlow";
+import RespondentExperience from "@/components/Respondent/RespondentExperience";
 import { fetchFormByShareId } from "@/lib/api";
-import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 
 const MIN_SPLASH_MS = 600;
 
+/** Public respondent entry point. Only resolves while the form is published. */
 export default function PublicFormPage({ params }: { params: Promise<{ shareId: string }> }) {
   const { shareId } = use(params);
-  const router = useRouter();
-  const toast = useToast();
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  const onFlowError = useCallback((message: string) => toast.error(message), [toast]);
-  const flow = useFormFlow({ form, onError: onFlowError });
 
   useEffect(() => {
     let cancelled = false;
@@ -40,7 +27,7 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
         const data = await fetchFormByShareId(shareId);
         if (!cancelled) setForm(data);
       } catch {
-        if (!cancelled) setLoadError("This form is not available.");
+        if (!cancelled) setLoadError("This form isn't available");
       } finally {
         // Hold the splash briefly so it does not flash on a fast response.
         const elapsed = Date.now() - startedAt;
@@ -54,12 +41,6 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     };
   }, [shareId]);
 
-  useEffect(() => {
-    if (flow.stage === "ending") {
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    }
-  }, [flow.stage]);
-
   if (loading) return <LoadingScreen />;
 
   if (loadError || !form) {
@@ -72,67 +53,5 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     );
   }
 
-  if (flow.stage === "welcome") return <WelcomeScreen form={form} onStart={flow.start} />;
-
-  if (flow.stage === "ending") {
-    return (
-      <EndingScreen
-        form={form}
-        onPrimaryAction={() => router.push("/")}
-        onSubmitAnother={flow.restart}
-      />
-    );
-  }
-
-  const accent = accentOf(form.theme);
-
-  return (
-    <div
-      style={themeStyles(form.theme)}
-      className="flex min-h-screen flex-col overflow-hidden"
-    >
-      {/* Thin progress rule pinned to the very top */}
-      <div className="fixed left-0 right-0 top-0 z-50 h-[3px] bg-[#e4e4e7]">
-        <div
-          className="h-full transition-all duration-300 ease-out"
-          style={{ width: `${flow.progress}%`, backgroundColor: accent }}
-        />
-      </div>
-
-      {/* Content sits left-aligned and vertically centred, as in Typeform */}
-      <div className="flex flex-1 items-center px-6 sm:px-[12%]">
-        <AnimatePresence mode="wait">
-          {flow.current && (
-            <motion.div
-              key={flow.current.id}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -24 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="w-full max-w-[820px]"
-            >
-              <QuestionCard
-                question={flow.current}
-                number={flow.index + 1}
-                value={flow.answers[flow.current.id] ?? ""}
-                accent={accent}
-                error={flow.error}
-                isLast={flow.isLast}
-                isSubmitting={flow.isSubmitting}
-                onChange={(value) => flow.setAnswer(flow.current!.id, value)}
-                onAdvance={flow.goNext}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <FlowFooter
-        index={flow.index}
-        total={flow.questions.length}
-        onPrev={flow.goBack}
-        onNext={flow.goNext}
-      />
-    </div>
-  );
+  return <RespondentExperience form={form} />;
 }
