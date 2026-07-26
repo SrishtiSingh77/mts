@@ -17,14 +17,22 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, ChevronUp, Copy, Layers, Lightbulb, MoreVertical, Plus, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
+import DropdownMenu, { MenuItem } from "@/components/ui/DropdownMenu";
 import { questionTypeMeta } from "@/lib/questionTypes";
 import { Question } from "@/types";
 
 interface BuilderSidebarPagesProps {
   questions: Question[];
   activeQuestionId: string | null;
+  welcomeEnabled: boolean;
+  isWelcomeActive: boolean;
+  isEndingActive: boolean;
+  endingTitle: string;
+  onSelectWelcome: () => void;
+  onSelectEnding: () => void;
+  onEnableWelcome: () => void;
   onSelectQuestion: (id: string) => void;
   onAddQuestion: () => void;
   onDuplicateQuestion: (id: string) => void;
@@ -35,6 +43,13 @@ interface BuilderSidebarPagesProps {
 export default function BuilderSidebarPages({
   questions,
   activeQuestionId,
+  welcomeEnabled,
+  isWelcomeActive,
+  isEndingActive,
+  endingTitle,
+  onSelectWelcome,
+  onSelectEnding,
+  onEnableWelcome,
   onSelectQuestion,
   onAddQuestion,
   onDuplicateQuestion,
@@ -63,9 +78,9 @@ export default function BuilderSidebarPages({
   };
 
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 p-4">
-      {/* Mode selector */}
-      <button className="flex items-center justify-between rounded-xl bg-panel px-4 py-3 text-[15px] text-[#6b5ea8] transition-colors hover:bg-[#ececee]">
+    <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+      {/* Mode selector — height matches the toolbar row so the two align */}
+      <button className="flex h-[52px] shrink-0 items-center justify-between rounded-xl bg-panel px-4 text-[15px] text-[#6b5ea8] transition-colors hover:bg-[#ececee]">
         <span className="flex items-center gap-2.5">
           <Layers className="h-[18px] w-[18px]" />
           <span>Universal mode</span>
@@ -109,13 +124,23 @@ export default function BuilderSidebarPages({
             </button>
           </div>
 
-          <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-[#d4d4d8] px-3 py-2.5 text-[14px] text-muted">
+          {/* Welcome screen: a real page once enabled, an add affordance until then */}
+          <button
+            onClick={welcomeEnabled ? onSelectWelcome : onEnableWelcome}
+            className={`mt-3 flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-[14px] transition-colors ${
+              welcomeEnabled
+                ? isWelcomeActive
+                  ? "bg-panel text-ink"
+                  : "bg-white text-ink hover:bg-white/70"
+                : "border border-dashed border-[#d4d4d8] text-muted hover:border-[#b8b8bf]"
+            }`}
+          >
             <span className="flex items-center gap-2">
               <Lightbulb className="h-4 w-4" />
-              <span>Add Welcome Screen</span>
+              <span>{welcomeEnabled ? "Welcome Screen" : "Add Welcome Screen"}</span>
             </span>
-            <span className="rounded bg-white px-1.5 py-0.5 text-[11px]">Soon</span>
-          </div>
+            {!welcomeEnabled && <Plus className="h-4 w-4 text-muted" />}
+          </button>
         </div>
       </div>
 
@@ -124,16 +149,26 @@ export default function BuilderSidebarPages({
         <div className="flex items-center justify-between">
           <span className="px-1 text-[15px] font-medium text-ink">Endings</span>
           <button
-            aria-label="Add ending"
-            title="Edit the thank-you screen in Settings"
+            onClick={onSelectEnding}
+            aria-label="Edit ending"
+            title="Edit the thank-you screen"
             className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-muted transition-colors hover:text-ink"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-2.5 rounded-lg bg-white px-3 py-2.5 text-[14px] text-ink">
-          Thank You Screen
-        </div>
+        <button
+          onClick={onSelectEnding}
+          title={endingTitle}
+          className={`mt-2.5 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors ${
+            isEndingActive ? "bg-white" : "hover:bg-white/70"
+          }`}
+        >
+          <span className="flex h-7 w-9 shrink-0 items-center justify-center rounded-md bg-chip text-[11px] font-bold text-chip-ink">
+            ◐
+          </span>
+          <span className="truncate text-[14px] text-ink">A</span>
+        </button>
       </div>
     </aside>
   );
@@ -164,20 +199,11 @@ function PageItem({
   onMoveDown,
 }: PageItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: question.id,
   });
   const { icon: TypeIcon } = questionTypeMeta(question.type);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onPointerDown(event: MouseEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
-  }, [menuOpen]);
 
   const run = (action: () => void) => () => {
     setMenuOpen(false);
@@ -187,93 +213,74 @@ function PageItem({
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 20 : undefined,
+      }}
       onClick={onSelect}
       title={question.title}
       className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2 py-2 transition-colors ${
         isActive ? "bg-panel" : "hover:bg-panel/70"
-      }`}
+      } ${isDragging ? "bg-white opacity-90 shadow-md" : ""}`}
     >
-      <span className="flex items-center gap-2" {...attributes} {...listeners}>
+      {/* Drag from the chip; the options button stays clickable. */}
+      <span
+        className="flex cursor-grab items-center gap-2 active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
         <span className="flex h-7 w-9 items-center justify-center rounded-md bg-chip text-chip-ink">
           <TypeIcon className="h-4 w-4" />
         </span>
         <span className="text-[14px] text-ink">{index + 1}</span>
       </span>
 
-      <div className="relative">
-        <button
-          onClick={(event) => {
-            event.stopPropagation();
-            setMenuOpen(!menuOpen);
-          }}
-          aria-label="Page options"
-          className="rounded p-0.5 text-muted opacity-0 transition-opacity hover:text-ink group-hover:opacity-100"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </button>
+      <button
+        ref={menuButtonRef}
+        onClick={(event) => {
+          event.stopPropagation();
+          setMenuOpen(!menuOpen);
+        }}
+        aria-label="Page options"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        className={`rounded p-0.5 text-muted transition-opacity hover:text-ink ${
+          menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        }`}
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
 
-        {menuOpen && (
-          <div
-            ref={menuRef}
-            onClick={(event) => event.stopPropagation()}
-            className="animate-fade-in absolute left-full top-0 z-40 ml-2 w-[172px] overflow-hidden rounded-xl border border-hair bg-white py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.12)]"
-          >
-            {/* Move and Delete only make sense once a second page exists */}
-            {total >= 2 && (
-              <>
-                <PageMenuItem icon={ChevronUp} disabled={index === 0} onClick={run(onMoveUp)}>
-                  Move up
-                </PageMenuItem>
-                <PageMenuItem
-                  icon={ChevronDown}
-                  disabled={index === total - 1}
-                  onClick={run(onMoveDown)}
-                >
-                  Move down
-                </PageMenuItem>
-              </>
-            )}
-
-            <PageMenuItem icon={Copy} onClick={run(onDuplicate)}>
-              Duplicate
-            </PageMenuItem>
-
-            {total >= 2 && (
-              <PageMenuItem icon={Trash2} danger onClick={run(onDelete)}>
-                Delete
-              </PageMenuItem>
-            )}
-          </div>
+      <DropdownMenu
+        anchorRef={menuButtonRef}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        placement="right-start"
+        width={180}
+      >
+        {/* Reordering and deleting only make sense once a second page exists */}
+        {total >= 2 && (
+          <>
+            <MenuItem icon={ChevronUp} disabled={index === 0} onClick={run(onMoveUp)}>
+              Move up
+            </MenuItem>
+            <MenuItem icon={ChevronDown} disabled={index === total - 1} onClick={run(onMoveDown)}>
+              Move down
+            </MenuItem>
+          </>
         )}
-      </div>
-    </div>
-  );
-}
 
-function PageMenuItem({
-  children,
-  icon: Icon,
-  onClick,
-  disabled,
-  danger,
-}: {
-  children: React.ReactNode;
-  icon: typeof Copy;
-  onClick?: () => void;
-  disabled?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`flex w-full items-center gap-2.5 px-4 py-2 text-left text-[15px] transition-colors ${
-        danger ? "text-[#c0392b] hover:bg-[#fdf2f1]" : "text-ink hover:bg-panel"
-      } disabled:cursor-not-allowed disabled:text-faint disabled:hover:bg-transparent`}
-    >
-      <Icon className="h-4 w-4" />
-      <span>{children}</span>
-    </button>
+        <MenuItem icon={Copy} onClick={run(onDuplicate)}>
+          Duplicate
+        </MenuItem>
+
+        {total >= 2 && (
+          <MenuItem icon={Trash2} danger onClick={run(onDelete)}>
+            Delete
+          </MenuItem>
+        )}
+      </DropdownMenu>
+    </div>
   );
 }

@@ -1,15 +1,14 @@
 "use client";
 
-import { Check, Lock, Palette, PartyPopper } from "lucide-react";
+import { Check, Lock, Palette } from "lucide-react";
 import { useState } from "react";
 
 import { FONT_OPTIONS, THEME_PRESETS, accentOf, themeStyles } from "@/lib/theme";
-import { Form, FormEnding, FormTheme, ThemeFont } from "@/types";
+import { Form, FormTheme, ThemeFont } from "@/types";
 
 interface SettingsTabViewProps {
   form: Form;
   onThemeChange: (theme: FormTheme) => void;
-  onEndingChange: (ending: FormEnding) => void;
 }
 
 const PLACEHOLDERS = [
@@ -22,21 +21,13 @@ const PLACEHOLDERS = [
 export default function SettingsTabView({
   form,
   onThemeChange,
-  onEndingChange,
 }: SettingsTabViewProps) {
   const [theme, setTheme] = useState<FormTheme>(form.theme);
-  const [ending, setEnding] = useState<FormEnding>(form.ending);
 
   const patchTheme = (patch: Partial<FormTheme>) => {
     const next = { ...theme, ...patch };
     setTheme(next);
     onThemeChange(next);
-  };
-
-  const patchEnding = (patch: Partial<FormEnding>) => {
-    const next = { ...ending, ...patch };
-    setEnding(next);
-    onEndingChange(next);
   };
 
   return (
@@ -165,65 +156,7 @@ export default function SettingsTabView({
           </div>
         </section>
 
-        {/* --- Thank-you screen --- */}
-        <section className="space-y-5 rounded-2xl border border-hair bg-white p-6 shadow-sm">
-          <header className="flex items-center space-x-2 border-b border-hair pb-3">
-            <PartyPopper className="h-4 w-4 text-ink" />
-            <h2 className="text-sm font-bold text-ink">Thank-you screen</h2>
-          </header>
-
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <label className="space-y-1.5">
-              <span className="block text-xs font-semibold text-ink">Headline</span>
-              <input
-                type="text"
-                value={ending.title}
-                onChange={(event) => patchEnding({ title: event.target.value })}
-                className="w-full rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none"
-              />
-            </label>
-
-            <label className="space-y-1.5">
-              <span className="block text-xs font-semibold text-ink">Button label</span>
-              <input
-                type="text"
-                value={ending.button_label}
-                onChange={(event) => patchEnding({ button_label: event.target.value })}
-                disabled={!ending.show_button}
-                className="w-full rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none disabled:bg-panel disabled:text-faint"
-              />
-            </label>
-
-            <label className="space-y-1.5 lg:col-span-2">
-              <span className="block text-xs font-semibold text-ink">Message</span>
-              <textarea
-                rows={2}
-                value={ending.description}
-                onChange={(event) => patchEnding({ description: event.target.value })}
-                className="w-full resize-none rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none"
-              />
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-hair pt-4">
-            <div>
-              <span className="block text-xs font-semibold text-ink">Show call-to-action</span>
-              <span className="block text-[10px] text-faint">
-                Respondents can always submit another response
-              </span>
-            </div>
-            <button
-              onClick={() => patchEnding({ show_button: !ending.show_button })}
-              role="switch"
-              aria-checked={ending.show_button}
-              className={`flex h-5 w-10 items-center rounded-full p-0.5 transition-colors ${
-                ending.show_button ? "justify-end bg-chrome" : "justify-start bg-[#c9c9cf]"
-              }`}
-            >
-              <span className="h-4 w-4 rounded-full bg-white shadow-md" />
-            </button>
-          </div>
-        </section>
+        {/* Welcome and thank-you screens are edited as pages on the Content tab. */}
 
         {/* --- Not built --- */}
         <section className="space-y-3 rounded-2xl border border-hair bg-white p-6 shadow-sm">

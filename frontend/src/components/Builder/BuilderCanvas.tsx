@@ -4,22 +4,35 @@ import { Mic, SendHorizontal } from "lucide-react";
 
 import QuestionInput from "@/components/Questions/QuestionInput";
 import { accentOf } from "@/lib/theme";
-import { FormTheme, Question } from "@/types";
+import { Form, FormEnding, FormTheme, FormWelcome, Question } from "@/types";
+import EndingCanvas from "./EndingCanvas";
+import WelcomeCanvas from "./WelcomeCanvas";
 
 interface BuilderCanvasProps {
+  form: Form;
   question: Question | null;
   questionNumber: number;
   theme: FormTheme;
   viewMode: "desktop" | "mobile";
+  /** Renders a screen page instead of a question. */
+  showWelcome: boolean;
+  showEnding: boolean;
   onUpdateQuestion: (updated: Partial<Question>) => void;
+  onWelcomeChange: (patch: Partial<FormWelcome>) => void;
+  onEndingChange: (patch: Partial<FormEnding>) => void;
 }
 
 export default function BuilderCanvas({
+  form,
   question,
   questionNumber,
   theme,
   viewMode,
+  showWelcome,
+  showEnding,
   onUpdateQuestion,
+  onWelcomeChange,
+  onEndingChange,
 }: BuilderCanvasProps) {
   return (
     <div className="relative flex min-w-0 flex-1 flex-col px-2 pb-4 pt-2">
@@ -31,7 +44,15 @@ export default function BuilderCanvas({
               : "rounded-md"
           }`}
         >
-          {question ? (
+          {showWelcome ? (
+            <div className="min-h-full" style={{ backgroundColor: theme.background }}>
+              <WelcomeCanvas form={form} onWelcomeChange={onWelcomeChange} />
+            </div>
+          ) : showEnding ? (
+            <div className="min-h-full" style={{ backgroundColor: theme.background }}>
+              <EndingCanvas form={form} onEndingChange={onEndingChange} />
+            </div>
+          ) : question ? (
             <div
               className={`flex min-h-full flex-col justify-center ${
                 viewMode === "mobile" ? "px-6 py-10" : "px-[10%] py-24"

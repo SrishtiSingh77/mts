@@ -13,6 +13,8 @@ import BuilderToolbar from "@/components/Builder/BuilderToolbar";
 import ComingSoonPanel from "@/components/Builder/ComingSoonPanel";
 import SettingsTabView from "@/components/Builder/SettingsTabView";
 import ShareTabView from "@/components/Builder/ShareTabView";
+import EndingInspector from "@/components/Builder/EndingInspector";
+import WelcomeInspector from "@/components/Builder/WelcomeInspector";
 import ErrorState from "@/components/ErrorState";
 import { useToast } from "@/components/ToastProvider";
 import {
@@ -25,7 +27,17 @@ import {
   updateForm,
   updateQuestion,
 } from "@/lib/api";
-import { Form, FormEnding, FormTheme, FormUpdatePayload, Question, QuestionType } from "@/types";
+import {
+  Form,
+  FormEnding,
+  FormTheme,
+  FormUpdatePayload,
+  FormWelcome,
+  Question,
+  QuestionType,
+  ENDING_PAGE_ID,
+  WELCOME_PAGE_ID,
+} from "@/types";
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -190,6 +202,73 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
     }
   };
 
+  /** Welcome edits are debounced under a single key, like question edits. */
+  const handleWelcomeChange = (patch: Partial<FormWelcome>) => {
+    if (!form) return;
+    const next = { ...form.welcome, ...patch };
+    setForm({ ...form, welcome: next });
+
+    if (saveTimers.has(WELCOME_PAGE_ID)) clearTimeout(saveTimers.get(WELCOME_PAGE_ID));
+    saveTimers.set(
+      WELCOME_PAGE_ID,
+      setTimeout(async () => {
+        saveTimers.delete(WELCOME_PAGE_ID);
+        try {
+          await updateForm(form.id, { welcome: next });
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Could not save the welcome screen.");
+        }
+      }, SAVE_DEBOUNCE_MS)
+    );
+  };
+
+  const handleEndingChange = (patch: Partial<FormEnding>) => {
+    if (!form) return;
+    const next = { ...form.ending, ...patch };
+    setForm({ ...form, ending: next });
+
+    if (saveTimers.has(ENDING_PAGE_ID)) clearTimeout(saveTimers.get(ENDING_PAGE_ID));
+    saveTimers.set(
+      ENDING_PAGE_ID,
+      setTimeout(async () => {
+        saveTimers.delete(ENDING_PAGE_ID);
+        try {
+          await updateForm(form.id, { ending: next });
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Could not save the ending screen.");
+        }
+      }, SAVE_DEBOUNCE_MS)
+    );
+  };
+
+  const handleEnableWelcome = async () => {
+    if (!form) return;
+    const next = { ...form.welcome, show: true };
+    setForm({ ...form, welcome: next });
+    setActiveQuestionId(WELCOME_PAGE_ID);
+    try {
+      setForm(await updateForm(form.id, { welcome: next }));
+      toast.success("Welcome screen added");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not add a welcome screen.");
+      loadForm();
+    }
+  };
+
+  const handleRemoveWelcome = async () => {
+    if (!form) return;
+    const next = { ...form.welcome, show: false };
+    setForm({ ...form, welcome: next });
+    setActiveQuestionId(form.questions?.[0]?.id ?? null);
+    try {
+      setForm(await updateForm(form.id, { welcome: next }));
+      toast.success("Welcome screen removed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not remove the welcome screen.");
+      loadForm();
+    }
+  };
+
   const handlePreview = () => {
     if (!form) return;
     if (form.status !== "published") {
@@ -219,6 +298,8 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
   }
 
   const questions = form.questions ?? [];
+  const isWelcomeSelected = activeQuestionId === WELCOME_PAGE_ID && form.welcome.show;
+  const isEndingSelected = activeQuestionId === ENDING_PAGE_ID;
   const activeQuestion = questions.find((q) => q.id === activeQuestionId) ?? null;
   const activeIndex = questions.findIndex((q) => q.id === activeQuestionId);
 
@@ -245,22 +326,44 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
             <BuilderSidebarPages
               questions={questions}
               activeQuestionId={activeQuestionId}
+              welcomeEnabled={form.welcome.show}
+              isWelcomeActive={isWelcomeSelected}
+              endingTitle={form.ending.title}
+              onSelectWelcome={() => setActiveQuestionId(WELCOME_PAGE_ID)}
+              onEnableWelcome={handleEnableWelcome}
               onSelectQuestion={setActiveQuestionId}
               onAddQuestion={() => setIsAddContentOpen(true)}
               onDuplicateQuestion={handleDuplicateQuestion}
               onDeleteQuestion={handleDeleteQuestion}
               onReorder={handleReorder}
+              isEndingActive={isEndingSelected}
+              onSelectEnding={() => setActiveQuestionId(ENDING_PAGE_ID)}
             />
 
             <BuilderCanvas
+              form={form}
               question={activeQuestion}
               questionNumber={activeIndex + 1}
               theme={form.theme}
               viewMode={viewMode}
+              showWelcome={isWelcomeSelected}
+              showEnding={isEndingSelected}
               onUpdateQuestion={handleUpdateQuestion}
+              onWelcomeChange={handleWelcomeChange}
+              onEndingChange={handleEndingChange}
             />
 
-            <BuilderRightPanel question={activeQuestion} onUpdateQuestion={handleUpdateQuestion} />
+            {isWelcomeSelected ? (
+              <WelcomeInspector
+                welcome={form.welcome}
+                onWelcomeChange={handleWelcomeChange}
+                onRemove={handleRemoveWelcome}
+              />
+            ) : isEndingSelected ? (
+              <EndingInspector ending={form.ending} onEndingChange={handleEndingChange} />
+            ) : (
+              <BuilderRightPanel question={activeQuestion} onUpdateQuestion={handleUpdateQuestion} />
+            )}
           </div>
         </>
       )}
@@ -273,7 +376,6 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
         <SettingsTabView
           form={form}
           onThemeChange={(theme: FormTheme) => saveForm({ theme })}
-          onEndingChange={(ending: FormEnding) => saveForm({ ending })}
         />
       )}
 
