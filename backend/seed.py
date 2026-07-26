@@ -79,7 +79,7 @@ SAMPLE_FORMS = [
             "show_time": True,
             "show_submissions": False,
         },
-        "theme": {"color": "#0f766e", "background": "#f7fdfb", "font": "serif"},
+        "theme": {"color": "#0f766e", "background": "#f7fdfb", "font": "sans"},
         "ending": {
             "title": "You're on the list 🎟️",
             "description": "A confirmation QR code is on its way to your inbox.",

@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${geistMono.variable} font-sans h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col">
         <ToastProvider>{children}</ToastProvider>
