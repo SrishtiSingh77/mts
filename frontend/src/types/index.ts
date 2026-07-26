@@ -39,12 +39,32 @@ export interface FormTheme {
   font: ThemeFont;
 }
 
+export const WELCOME_BUTTON_MAX_LENGTH = 24;
+
+export interface FormWelcome {
+  show: boolean;
+  /** Blank falls back to the form's own title. */
+  title: string;
+  /** Blank falls back to the form's own description. */
+  description: string;
+  button_label: string;
+  show_time: boolean;
+  show_submissions: boolean;
+}
+
+/** The welcome screen is selectable in the Pages list under this sentinel id. */
+export const WELCOME_PAGE_ID = "__welcome__";
+
 export interface FormEnding {
   title: string;
   description: string;
   button_label: string;
   show_button: boolean;
+  show_social: boolean;
 }
+
+/** The ending screen is selectable in the Endings list under this sentinel id. */
+export const ENDING_PAGE_ID = "__ending__";
 
 export interface Form {
   id: string;
@@ -56,6 +76,7 @@ export interface Form {
   updated_at: string;
   response_count: number;
   theme: FormTheme;
+  welcome: FormWelcome;
   ending: FormEnding;
   questions?: Question[];
 }
@@ -66,6 +87,7 @@ export interface FormUpdatePayload {
   description?: string;
   status?: Form["status"];
   theme?: FormTheme;
+  welcome?: FormWelcome;
   ending?: FormEnding;
 }
 
