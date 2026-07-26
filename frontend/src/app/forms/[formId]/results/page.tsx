@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence } from "framer-motion";
 import { ChevronLeft, Download, Gem, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -226,7 +227,13 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto px-8 py-9">
+        <main
+          className={`min-w-0 flex-1 ${
+            subTab === "responses"
+              ? "flex flex-col overflow-hidden px-6 py-5"
+              : "mx-auto max-w-6xl overflow-y-auto px-8 py-9"
+          }`}
+        >
           {subTab === "insights" && (
             <InsightsPanel summary={summary} questionCount={form.questions?.length ?? 0} />
           )}
@@ -282,6 +289,8 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
             ) : (
               <ResponsesTable
                 responses={filteredResponses}
+                questions={form.questions ?? []}
+                endingTitle={form.ending.title}
                 selectedIds={selectedIds}
                 searchQuery={searchQuery}
                 isGenerating={isGenerating}
@@ -301,16 +310,19 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
             ))}
         </main>
 
-        {activeResponse && detailIndex !== null && (
-          <ResponseDetailPanel
-            response={activeResponse}
-            form={form}
-            index={detailIndex}
-            total={filteredResponses.length}
-            onNavigate={setDetailIndex}
-            onClose={() => setDetailIndex(null)}
-          />
-        )}
+        <AnimatePresence>
+          {activeResponse && detailIndex !== null && (
+            <ResponseDetailPanel
+              key="detail"
+              response={activeResponse}
+              form={form}
+              index={detailIndex}
+              total={filteredResponses.length}
+              onNavigate={setDetailIndex}
+              onClose={() => setDetailIndex(null)}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       {selectedIds.length > 0 && (
