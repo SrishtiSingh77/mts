@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 import validation
 
@@ -84,11 +84,24 @@ class FormTheme(BaseModel):
     font: str = "sans"
 
 
+WELCOME_BUTTON_MAX_LENGTH = 24
+
+
+class FormWelcome(BaseModel):
+    show: bool = True
+    title: str = ""
+    description: str = ""
+    button_label: str = Field(default="Start", max_length=WELCOME_BUTTON_MAX_LENGTH)
+    show_time: bool = True
+    show_submissions: bool = False
+
+
 class FormEnding(BaseModel):
     title: str = "Thanks for completing this typeform"
     description: str = "Now create your own — it's free, easy & beautiful"
-    button_label: str = "Create a typeform"
+    button_label: str = Field(default="Create a typeform", max_length=WELCOME_BUTTON_MAX_LENGTH)
     show_button: bool = True
+    show_social: bool = True
 
 
 class FormBase(BaseModel):
@@ -105,6 +118,7 @@ class FormUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = None
     theme: Optional[FormTheme] = None
+    welcome: Optional[FormWelcome] = None
     ending: Optional[FormEnding] = None
 
     @field_validator("status")
@@ -123,6 +137,7 @@ class FormSchema(ORMModel, FormBase):
     updated_at: datetime
     response_count: int = 0
     theme: FormTheme = FormTheme()
+    welcome: FormWelcome = FormWelcome()
     ending: FormEnding = FormEnding()
 
     @model_validator(mode="before")
@@ -146,11 +161,20 @@ class FormSchema(ORMModel, FormBase):
                 "background": data.theme_background,
                 "font": data.theme_font,
             },
+            "welcome": {
+                "show": data.welcome_show,
+                "title": data.welcome_title,
+                "description": data.welcome_description,
+                "button_label": data.welcome_button_label,
+                "show_time": data.welcome_show_time,
+                "show_submissions": data.welcome_show_submissions,
+            },
             "ending": {
                 "title": data.ending_title,
                 "description": data.ending_description,
                 "button_label": data.ending_button_label,
                 "show_button": data.ending_show_button,
+                "show_social": data.ending_show_social,
             },
         }
 

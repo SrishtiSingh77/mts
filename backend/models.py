@@ -46,6 +46,14 @@ class Form(Base):
     status = Column(String, nullable=False, default="draft")  # draft | published
     share_id = Column(String, unique=True, index=True, default=generate_share_id)
 
+    # Welcome screen copy. Blank title/description fall back to the form's own.
+    welcome_show = Column(Boolean, nullable=False, default=True)
+    welcome_title = Column(String, nullable=False, default="")
+    welcome_description = Column(Text, nullable=False, default="")
+    welcome_button_label = Column(String, nullable=False, default="Start")
+    welcome_show_time = Column(Boolean, nullable=False, default=True)
+    welcome_show_submissions = Column(Boolean, nullable=False, default=False)
+
     # Theme applied to the respondent flow; defaults match Typeform's basic theme.
     theme_color = Column(String, nullable=False, default="#262627")
     theme_background = Column(String, nullable=False, default="#f9f9f9")
@@ -58,6 +66,7 @@ class Form(Base):
     )
     ending_button_label = Column(String, nullable=False, default="Create a typeform")
     ending_show_button = Column(Boolean, nullable=False, default=True)
+    ending_show_social = Column(Boolean, nullable=False, default=True)
 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

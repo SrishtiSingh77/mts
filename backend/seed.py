@@ -18,12 +18,21 @@ SAMPLE_FORMS = [
         "description": "Help us improve FormFlow by sharing your valuable feedback!",
         "status": "published",
         "share_id": "demo-feedback",
+        "welcome": {
+            "show": True,
+            "title": "How are we doing?",
+            "description": "Five quick questions on FormFlow. Takes about a minute, and every answer reaches the product team.",
+            "button_label": "Start",
+            "show_time": True,
+            "show_submissions": True,
+        },
         "theme": {"color": "#262627", "background": "#f9f9f9", "font": "sans"},
         "ending": {
             "title": "Thanks for the feedback!",
             "description": "Your answers go straight to the product team.",
             "button_label": "Create a typeform",
             "show_button": True,
+            "show_social": True,
         },
         "questions": [
             ("short_text", "What is your full name?", "Enter your first and last name", True, {}, []),
@@ -62,12 +71,21 @@ SAMPLE_FORMS = [
         "description": "Reserve your seat for the annual keynote and workshop tracks.",
         "status": "published",
         "share_id": "demo-event",
+        "welcome": {
+            "show": True,
+            "title": "Tech Summit 2026",
+            "description": "Two days of keynotes and workshops in Pune. Reserve your seat below.",
+            "button_label": "Register",
+            "show_time": True,
+            "show_submissions": False,
+        },
         "theme": {"color": "#0f766e", "background": "#f7fdfb", "font": "serif"},
         "ending": {
             "title": "You're on the list 🎟️",
             "description": "A confirmation QR code is on its way to your inbox.",
             "button_label": "Back to home",
             "show_button": False,
+            "show_social": False,
         },
         "questions": [
             ("short_text", "Attendee name", "Full legal name for badge printing", True, {}, []),
@@ -95,12 +113,21 @@ SAMPLE_FORMS = [
         "description": "Internal draft — not published yet.",
         "status": "draft",
         "share_id": "demo-onboarding",
+        "welcome": {
+            "show": False,
+            "title": "",
+            "description": "",
+            "button_label": "Start",
+            "show_time": False,
+            "show_submissions": False,
+        },
         "theme": {"color": "#c026d3", "background": "#fdf7fd", "font": "sans"},
         "ending": {
             "title": "Onboarding submitted",
             "description": "People Ops will follow up within two working days.",
             "button_label": "Done",
             "show_button": False,
+            "show_social": False,
         },
         "questions": [
             ("short_text", "What is your preferred first name?", "This is what your teammates will see", True, {}, []),
@@ -136,7 +163,7 @@ def seed_database() -> None:
 
 
 def _seed_form(db, spec: dict) -> None:
-    theme, ending = spec["theme"], spec["ending"]
+    theme, welcome, ending = spec["theme"], spec["welcome"], spec["ending"]
     form = models.Form(
         creator_id=DEFAULT_CREATOR["id"],
         title=spec["title"],
@@ -146,10 +173,17 @@ def _seed_form(db, spec: dict) -> None:
         theme_color=theme["color"],
         theme_background=theme["background"],
         theme_font=theme["font"],
+        welcome_show=welcome["show"],
+        welcome_title=welcome["title"],
+        welcome_description=welcome["description"],
+        welcome_button_label=welcome["button_label"],
+        welcome_show_time=welcome["show_time"],
+        welcome_show_submissions=welcome["show_submissions"],
         ending_title=ending["title"],
         ending_description=ending["description"],
         ending_button_label=ending["button_label"],
         ending_show_button=ending["show_button"],
+        ending_show_social=ending["show_social"],
     )
     db.add(form)
     db.flush()

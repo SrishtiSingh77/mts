@@ -75,11 +75,19 @@ def update_form(db: Session, form_id: str, form_data: schemas.FormUpdate) -> Opt
         db_form.theme_color = form_data.theme.color
         db_form.theme_background = form_data.theme.background
         db_form.theme_font = form_data.theme.font
+    if form_data.welcome is not None:
+        db_form.welcome_show = form_data.welcome.show
+        db_form.welcome_title = form_data.welcome.title
+        db_form.welcome_description = form_data.welcome.description
+        db_form.welcome_button_label = form_data.welcome.button_label
+        db_form.welcome_show_time = form_data.welcome.show_time
+        db_form.welcome_show_submissions = form_data.welcome.show_submissions
     if form_data.ending is not None:
         db_form.ending_title = form_data.ending.title
         db_form.ending_description = form_data.ending.description
         db_form.ending_button_label = form_data.ending.button_label
         db_form.ending_show_button = form_data.ending.show_button
+        db_form.ending_show_social = form_data.ending.show_social
 
     db.commit()
     db.refresh(db_form)
@@ -100,10 +108,17 @@ def duplicate_form(db: Session, form_id: str) -> Optional[models.Form]:
         theme_color=db_form.theme_color,
         theme_background=db_form.theme_background,
         theme_font=db_form.theme_font,
+        welcome_show=db_form.welcome_show,
+        welcome_title=db_form.welcome_title,
+        welcome_description=db_form.welcome_description,
+        welcome_button_label=db_form.welcome_button_label,
+        welcome_show_time=db_form.welcome_show_time,
+        welcome_show_submissions=db_form.welcome_show_submissions,
         ending_title=db_form.ending_title,
         ending_description=db_form.ending_description,
         ending_button_label=db_form.ending_button_label,
         ending_show_button=db_form.ending_show_button,
+        ending_show_social=db_form.ending_show_social,
     )
     db.add(new_form)
     db.flush()
