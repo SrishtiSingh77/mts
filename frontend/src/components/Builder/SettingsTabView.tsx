@@ -40,19 +40,19 @@ export default function SettingsTabView({
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden bg-gray-50/60">
+    <div className="flex flex-1 overflow-hidden bg-panel">
       <div className="mx-auto w-full max-w-5xl space-y-6 overflow-y-auto p-8">
         {/* --- Theme --- */}
-        <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <header className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-            <Palette className="h-4 w-4 text-purple-600" />
-            <h2 className="text-sm font-bold text-gray-900">Theme</h2>
+        <section className="space-y-5 rounded-2xl border border-hair bg-white p-6 shadow-sm">
+          <header className="flex items-center space-x-2 border-b border-hair pb-3">
+            <Palette className="h-4 w-4 text-ink" />
+            <h2 className="text-sm font-bold text-ink">Theme</h2>
           </header>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="space-y-5">
               <div className="space-y-2">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">
                   Presets
                 </span>
                 <div className="grid grid-cols-3 gap-2">
@@ -67,8 +67,8 @@ export default function SettingsTabView({
                         }
                         className={`flex items-center space-x-2 rounded-xl border p-2.5 text-left text-[11px] font-semibold transition-all ${
                           isActive
-                            ? "border-purple-600 bg-purple-50 text-purple-950"
-                            : "border-gray-200 text-gray-700 hover:border-gray-300"
+                            ? "border-ink bg-panel text-ink"
+                            : "border-hair text-ink hover:border-[#c9c9cf]"
                         }`}
                       >
                         <span
@@ -85,31 +85,31 @@ export default function SettingsTabView({
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="space-y-1.5">
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">
                     Accent
                   </span>
                   <input
                     type="color"
                     value={theme.color}
                     onChange={(event) => patchTheme({ color: event.target.value })}
-                    className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1"
+                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-white p-1"
                   />
                 </label>
                 <label className="space-y-1.5">
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">
                     Background
                   </span>
                   <input
                     type="color"
                     value={theme.background}
                     onChange={(event) => patchTheme({ background: event.target.value })}
-                    className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1"
+                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-white p-1"
                   />
                 </label>
               </div>
 
               <div className="space-y-1.5">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">
                   Font
                 </span>
                 <div className="flex items-center space-x-2">
@@ -120,8 +120,8 @@ export default function SettingsTabView({
                       style={{ fontFamily: option.stack }}
                       className={`flex-1 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
                         theme.font === option.value
-                          ? "border-purple-600 bg-purple-50 text-purple-950"
-                          : "border-gray-200 text-gray-700 hover:border-gray-300"
+                          ? "border-ink bg-panel text-ink"
+                          : "border-hair text-ink hover:border-[#c9c9cf]"
                       }`}
                     >
                       {option.label}
@@ -133,23 +133,23 @@ export default function SettingsTabView({
 
             {/* Live theme preview */}
             <div className="space-y-2">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">
                 Preview
               </span>
               <div
                 style={themeStyles(theme)}
-                className="space-y-4 rounded-2xl border border-gray-200 p-6"
+                className="space-y-4 rounded-2xl border border-hair p-6"
               >
                 <div className="flex items-start space-x-2">
                   <span className="text-lg font-bold" style={{ color: accentOf(theme) }}>
                     1 →
                   </span>
-                  <p className="text-lg font-bold text-gray-900">
+                  <p className="text-lg font-bold text-ink">
                     How would you rate this theme?
                   </p>
                 </div>
                 <div
-                  className="ml-7 border-b-2 pb-2 text-sm text-gray-400"
+                  className="ml-7 border-b-2 pb-2 text-sm text-faint"
                   style={{ borderBottomColor: accentOf(theme) }}
                 >
                   Type your answer here...
@@ -166,49 +166,49 @@ export default function SettingsTabView({
         </section>
 
         {/* --- Thank-you screen --- */}
-        <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <header className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-            <PartyPopper className="h-4 w-4 text-purple-600" />
-            <h2 className="text-sm font-bold text-gray-900">Thank-you screen</h2>
+        <section className="space-y-5 rounded-2xl border border-hair bg-white p-6 shadow-sm">
+          <header className="flex items-center space-x-2 border-b border-hair pb-3">
+            <PartyPopper className="h-4 w-4 text-ink" />
+            <h2 className="text-sm font-bold text-ink">Thank-you screen</h2>
           </header>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <label className="space-y-1.5">
-              <span className="block text-xs font-semibold text-gray-700">Headline</span>
+              <span className="block text-xs font-semibold text-ink">Headline</span>
               <input
                 type="text"
                 value={ending.title}
                 onChange={(event) => patchEnding({ title: event.target.value })}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-full rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none"
               />
             </label>
 
             <label className="space-y-1.5">
-              <span className="block text-xs font-semibold text-gray-700">Button label</span>
+              <span className="block text-xs font-semibold text-ink">Button label</span>
               <input
                 type="text"
                 value={ending.button_label}
                 onChange={(event) => patchEnding({ button_label: event.target.value })}
                 disabled={!ending.show_button}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-400"
+                className="w-full rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none disabled:bg-panel disabled:text-faint"
               />
             </label>
 
             <label className="space-y-1.5 lg:col-span-2">
-              <span className="block text-xs font-semibold text-gray-700">Message</span>
+              <span className="block text-xs font-semibold text-ink">Message</span>
               <textarea
                 rows={2}
                 value={ending.description}
                 onChange={(event) => patchEnding({ description: event.target.value })}
-                className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-full resize-none rounded-lg border border-hair px-3 py-2 text-xs text-ink focus:border-ink focus:outline-none"
               />
             </label>
           </div>
 
-          <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+          <div className="flex items-center justify-between border-t border-hair pt-4">
             <div>
-              <span className="block text-xs font-semibold text-gray-800">Show call-to-action</span>
-              <span className="block text-[10px] text-gray-400">
+              <span className="block text-xs font-semibold text-ink">Show call-to-action</span>
+              <span className="block text-[10px] text-faint">
                 Respondents can always submit another response
               </span>
             </div>
@@ -217,7 +217,7 @@ export default function SettingsTabView({
               role="switch"
               aria-checked={ending.show_button}
               className={`flex h-5 w-10 items-center rounded-full p-0.5 transition-colors ${
-                ending.show_button ? "justify-end bg-purple-600" : "justify-start bg-gray-300"
+                ending.show_button ? "justify-end bg-chrome" : "justify-start bg-[#c9c9cf]"
               }`}
             >
               <span className="h-4 w-4 rounded-full bg-white shadow-md" />
@@ -226,19 +226,19 @@ export default function SettingsTabView({
         </section>
 
         {/* --- Not built --- */}
-        <section className="space-y-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <header className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-            <Lock className="h-4 w-4 text-gray-400" />
-            <h2 className="text-sm font-bold text-gray-900">More settings</h2>
+        <section className="space-y-3 rounded-2xl border border-hair bg-white p-6 shadow-sm">
+          <header className="flex items-center space-x-2 border-b border-hair pb-3">
+            <Lock className="h-4 w-4 text-faint" />
+            <h2 className="text-sm font-bold text-ink">More settings</h2>
           </header>
           <div className="grid grid-cols-2 gap-2">
             {PLACEHOLDERS.map((label) => (
               <div
                 key={label}
-                className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs text-gray-500"
+                className="flex items-center justify-between rounded-lg border border-hair bg-panel px-3 py-2.5 text-xs text-muted"
               >
                 <span>{label}</span>
-                <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700">
+                <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-medium text-ink">
                   Coming Soon
                 </span>
               </div>

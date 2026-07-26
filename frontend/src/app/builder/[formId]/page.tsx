@@ -1,17 +1,19 @@
 "use client";
 
-import { Plug, Workflow } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Plug, Workflow as WorkflowIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
 import AddContentModal from "@/components/Builder/AddContentModal";
 import BuilderCanvas from "@/components/Builder/BuilderCanvas";
-import BuilderHeader, { BuilderTab } from "@/components/Builder/BuilderHeader";
+import BuilderHeader, { BUILDER_TABS, BuilderTab } from "@/components/Builder/BuilderHeader";
 import BuilderRightPanel from "@/components/Builder/BuilderRightPanel";
 import BuilderSidebarPages from "@/components/Builder/BuilderSidebarPages";
+import BuilderToolbar from "@/components/Builder/BuilderToolbar";
 import ComingSoonPanel from "@/components/Builder/ComingSoonPanel";
 import SettingsTabView from "@/components/Builder/SettingsTabView";
 import ShareTabView from "@/components/Builder/ShareTabView";
+import ErrorState from "@/components/ErrorState";
 import { useToast } from "@/components/ToastProvider";
 import {
   createQuestion,
@@ -33,13 +35,23 @@ const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 export default function BuilderPage({ params }: { params: Promise<{ formId: string }> }) {
   const { formId } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
 
   const [form, setForm] = useState<Form | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<BuilderTab>("Content");
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
+
+  // Lets the dashboard context menu deep-link straight to a tab.
+  useEffect(() => {
+    const requested = searchParams.get("tab");
+    if (requested && (BUILDER_TABS as readonly string[]).includes(requested)) {
+      setActiveTab(requested as BuilderTab);
+    }
+  }, [searchParams]);
 
   const loadForm = useCallback(async () => {
     try {
@@ -178,9 +190,18 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
     }
   };
 
+  const handlePreview = () => {
+    if (!form) return;
+    if (form.status !== "published") {
+      toast.info("Publish the form to open the public preview.");
+      return;
+    }
+    window.open(`/f/${form.share_id}`, "_blank");
+  };
+
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-sm text-gray-400">
+      <div className="flex h-screen items-center justify-center bg-white text-[15px] text-muted">
         Loading builder...
       </div>
     );
@@ -188,9 +209,12 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   if (!form) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-sm text-red-500">
-        Form not found.
-      </div>
+      <ErrorState
+        code="404"
+        title="This form no longer exists"
+        description="It may have been deleted, or the link points at an id that was never created."
+        action={{ label: "Back to my forms", href: "/" }}
+      />
     );
   }
 
@@ -208,27 +232,37 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
       />
 
       {activeTab === "Content" && (
-        <div className="flex flex-1 overflow-hidden">
-          <BuilderSidebarPages
-            questions={questions}
-            activeQuestionId={activeQuestionId}
-            onSelectQuestion={setActiveQuestionId}
-            onAddQuestion={() => setIsAddContentOpen(true)}
-            onDuplicateQuestion={handleDuplicateQuestion}
-            onDeleteQuestion={handleDeleteQuestion}
-            onReorder={handleReorder}
+        <>
+          <BuilderToolbar
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onAddContent={() => setIsAddContentOpen(true)}
+            onOpenSettings={() => setActiveTab("Settings")}
+            onPreview={handlePreview}
           />
 
-          <BuilderCanvas
-            question={activeQuestion}
-            questionNumber={activeIndex + 1}
-            theme={form.theme}
-            onUpdateQuestion={handleUpdateQuestion}
-            onAddQuestion={() => setIsAddContentOpen(true)}
-          />
+          <div className="flex min-h-0 flex-1">
+            <BuilderSidebarPages
+              questions={questions}
+              activeQuestionId={activeQuestionId}
+              onSelectQuestion={setActiveQuestionId}
+              onAddQuestion={() => setIsAddContentOpen(true)}
+              onDuplicateQuestion={handleDuplicateQuestion}
+              onDeleteQuestion={handleDeleteQuestion}
+              onReorder={handleReorder}
+            />
 
-          <BuilderRightPanel question={activeQuestion} onUpdateQuestion={handleUpdateQuestion} />
-        </div>
+            <BuilderCanvas
+              question={activeQuestion}
+              questionNumber={activeIndex + 1}
+              theme={form.theme}
+              viewMode={viewMode}
+              onUpdateQuestion={handleUpdateQuestion}
+            />
+
+            <BuilderRightPanel question={activeQuestion} onUpdateQuestion={handleUpdateQuestion} />
+          </div>
+        </>
       )}
 
       {activeTab === "Share" && (
@@ -245,7 +279,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
       {activeTab === "Workflow" && (
         <ComingSoonPanel
-          icon={Workflow}
+          icon={WorkflowIcon}
           title="Logic & branching"
           description="Route respondents down different paths based on their answers."
           features={["Logic jumps", "Conditional branching", "Question groups", "Calculated scores"]}

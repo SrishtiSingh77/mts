@@ -1,7 +1,9 @@
 "use client";
 
+import { AlertTriangle, Check, ChevronDown, Gem, Link2, Mail, Pencil, QrCode, SquareDashed } from "lucide-react";
 import { useState } from "react";
-import { AlertTriangle, Check, Edit3, ExternalLink, Layout, Link2, Mail, QrCode, Sparkles } from "lucide-react";
+
+import TypeformLogo from "@/components/TypeformLogo";
 import { useToast } from "@/components/ToastProvider";
 import { Form } from "@/types";
 
@@ -13,8 +15,10 @@ interface ShareTabViewProps {
 export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProps) {
   const [copied, setCopied] = useState(false);
   const toast = useToast();
+
   const isPublished = form.status === "published";
-  const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/f/${form.share_id}`;
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const publicUrl = `${origin}/f/${form.share_id}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -24,41 +28,29 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
   };
 
   return (
-    <div className="flex-1 bg-gray-50/60 overflow-y-auto p-8 font-sans select-none">
-      <div className="max-w-3xl mx-auto space-y-8 py-4">
-        {/* Title */}
-        <div className="text-center space-y-1">
-          <h2 className="text-2xl font-extrabold text-gray-900">
-            Choose how you'd like to share your form
-          </h2>
-          <p className="text-xs text-gray-500">
-            Publish your link or embed your form directly into your site or emails.
-          </p>
-        </div>
+    <div className="flex-1 select-none overflow-y-auto bg-stage px-6 py-9">
+      <div className="mx-auto max-w-[800px]">
+        <h2 className="text-center text-[30px] leading-snug text-ink">
+          Choose how you&rsquo;d like to share your form
+        </h2>
 
         {/* Publish state — the link only resolves while published */}
         <div
-          className={`flex items-center justify-between rounded-2xl border p-5 ${
-            isPublished
-              ? "border-emerald-200 bg-emerald-50/60"
-              : "border-amber-200 bg-amber-50/60"
+          className={`mt-7 flex items-center justify-between gap-4 rounded-xl border px-5 py-4 ${
+            isPublished ? "border-[#a7d4c6] bg-[#f2faf7]" : "border-[#f0d9a8] bg-[#fffaf0]"
           }`}
         >
-          <div className="flex items-start space-x-3">
+          <div className="flex items-start gap-3">
             {isPublished ? (
-              <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-brand-green" />
             ) : (
-              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#a37413]" />
             )}
-            <div className="space-y-0.5">
-              <h3
-                className={`text-sm font-bold ${
-                  isPublished ? "text-emerald-900" : "text-amber-900"
-                }`}
-              >
+            <div>
+              <p className="text-[15px] font-medium text-ink">
                 {isPublished ? "Your form is live" : "Your form is a draft"}
-              </h3>
-              <p className={`text-xs ${isPublished ? "text-emerald-800" : "text-amber-800"}`}>
+              </p>
+              <p className="mt-0.5 text-[14px] text-muted">
                 {isPublished
                   ? "Anyone with the link can respond — no account needed."
                   : "The public link returns “not available” until you publish."}
@@ -66,123 +58,107 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
             </div>
           </div>
 
-          <div className="flex flex-shrink-0 items-center space-x-2">
-            {isPublished && (
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="shadow-2xs flex items-center space-x-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>Open</span>
-              </a>
-            )}
-            <button
-              onClick={onTogglePublish}
-              className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 ${
-                isPublished ? "bg-gray-700 hover:bg-gray-800" : "bg-emerald-700 hover:bg-emerald-800"
-              }`}
-            >
-              {isPublished ? "Unpublish" : "Publish"}
-            </button>
-          </div>
+          <button
+            onClick={onTogglePublish}
+            className={`shrink-0 rounded-lg px-4 py-2.5 text-[15px] font-medium text-white transition-colors ${
+              isPublished ? "bg-chrome hover:bg-chrome-hover" : "bg-brand-green hover:bg-brand-green-hover"
+            }`}
+          >
+            {isPublished ? "Unpublish" : "Publish"}
+          </button>
         </div>
 
-        {/* Main Share Link Card matching Screenshot 3 */}
-        <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm p-8 space-y-6">
-          {/* Link Box */}
-          <div className="flex items-center space-x-2">
+        {/* Link card */}
+        <div className="mt-5 rounded-xl border border-hair bg-white p-7">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={handleCopy}
-              className="bg-[#262627] hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-2xs active:scale-95 flex-shrink-0"
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:scale-[0.98]"
             >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Link2 className="w-4 h-4" />
-                  <span>Copy link</span>
-                </>
-              )}
+              {copied ? <Check className="h-[18px] w-[18px]" /> : <Link2 className="h-[18px] w-[18px]" />}
+              <span>{copied ? "Copied!" : "Copy link"}</span>
             </button>
 
-            <input
-              type="text"
-              readOnly
-              value={publicUrl}
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-700 font-mono focus:outline-none"
-            />
-
-            <button className="text-xs font-semibold text-gray-600 hover:text-gray-900 border border-gray-200 rounded-xl px-3 py-2.5 flex items-center space-x-1 hover:bg-gray-50">
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit</span>
-            </button>
-
-            <button className="p-2.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50">
-              <QrCode className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Link Preview Section */}
-          <div className="space-y-3 pt-2 border-t border-gray-100">
-            <div className="flex items-center justify-between text-xs font-semibold text-gray-500">
-              <span>Link preview</span>
-              <button className="flex items-center space-x-1 text-gray-600 hover:text-gray-900">
-                <span>Customize</span>
-                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-panel px-4 py-2.5">
+              <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{publicUrl}</span>
+              <button
+                disabled
+                title="Custom link slugs — coming soon"
+                className="flex shrink-0 items-center gap-1.5 text-[15px] text-faint"
+              >
+                <Pencil className="h-4 w-4" />
+                <span>Edit</span>
               </button>
             </div>
 
-            <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/40 flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-lg shadow-2xs">
-                {form.title.charAt(0).toUpperCase()}
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-gray-900">{form.title}</h4>
-                <p className="text-xs text-gray-500">
-                  {form.description || "Turn data collection into an experience with FormFlow."}
+            <button
+              disabled
+              title="QR code — coming soon"
+              aria-label="QR code"
+              className="shrink-0 rounded-lg border border-hair p-2.5 text-faint"
+            >
+              <QrCode className="h-[18px] w-[18px]" />
+            </button>
+          </div>
+
+          <div className="mt-6 border-t border-hair pt-5">
+            <div className="flex items-center justify-between">
+              <span className="text-[15px] text-ink">Link preview</span>
+              <button
+                disabled
+                title="Coming soon"
+                className="flex items-center gap-2 text-[15px] text-faint"
+              >
+                <span>Customize</span>
+                <ChevronDown className="h-4 w-4" />
+                <Gem className="h-4 w-4 text-[#a7d4c6]" />
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-center gap-4 rounded-lg border border-hair p-4">
+              <span className="flex h-[76px] w-[128px] shrink-0 items-center justify-center rounded-md bg-panel">
+                <TypeformLogo className="h-4 w-5 text-ink" />
+                <span className="ml-1.5 text-[15px] font-bold text-ink">Typeform</span>
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[15px] font-medium text-ink">{form.title}</p>
+                <p className="mt-0.5 line-clamp-1 text-[14px] text-muted">
+                  {form.description || "Turn data collection into an experience with Typeform."}
                 </p>
-                <span className="text-[10px] text-gray-400 font-mono">formflow.app/f/{form.share_id}</span>
+                <p className="mt-0.5 text-[13px] text-faint">{origin.replace(/^https?:\/\//, "")}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Embed Form Section matching Screenshot 3 */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold text-gray-900">Embed form</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {/* On your website card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-purple-300 transition-all cursor-pointer shadow-2xs flex items-center space-x-4">
-              <div className="w-20 h-16 rounded-xl bg-purple-200/80 flex items-center justify-center text-purple-700">
-                <Layout className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-gray-900">On your website</h4>
-                <p className="text-[11px] text-gray-500">Popup, side tab, or full page embed</p>
-              </div>
+        {/* Embed options — visual placeholders */}
+        <h3 className="mt-8 text-[15px] font-medium text-ink">Embed form</h3>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            { label: "On your website", icon: SquareDashed, tint: "from-[#d9a8ea] to-[#c07fdb]" },
+            { label: "In your email", icon: Mail, tint: "from-[#a8c8f0] to-[#7fa8e0]" },
+          ].map(({ label, icon: Icon, tint }) => (
+            <div
+              key={label}
+              title="Embedding — coming soon"
+              className="flex cursor-not-allowed items-center gap-4 overflow-hidden rounded-xl border border-hair bg-white"
+            >
+              <span
+                className={`flex h-[104px] w-[180px] shrink-0 items-center justify-center bg-gradient-to-br ${tint} text-white`}
+              >
+                <Icon className="h-8 w-8" />
+              </span>
+              <span className="text-[15px] text-ink">{label}</span>
             </div>
-
-            {/* In your email card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 transition-all cursor-pointer shadow-2xs flex items-center space-x-4">
-              <div className="w-20 h-16 rounded-xl bg-blue-100 flex items-center justify-center text-blue-700">
-                <Mail className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-gray-900">In your email</h4>
-                <p className="text-[11px] text-gray-500">Embed first question into newsletters</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Bottom Action */}
-        <div className="text-center pt-2">
-          <button className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-xs py-2.5 px-6 rounded-xl shadow-2xs transition-colors">
+        <div className="mt-8 flex justify-center">
+          <button
+            disabled
+            title="Coming soon"
+            className="rounded-lg border border-hair bg-white px-5 py-2.5 text-[15px] text-faint"
+          >
             Explore other ways to share
           </button>
         </div>
