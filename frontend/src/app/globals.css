@@ -5,6 +5,7 @@
   --color-ink: #262627; /* respondent text, canvas dark */
   --color-chrome: #2f2a33; /* app chrome buttons: Create form, Add content */
   --color-chrome-hover: #1f1c23;
+  --color-chrome-pressed: #4a4350; /* lightens on :active so presses read */
   --color-brand-green: #12705e; /* View plans, Upgrade plan */
   --color-brand-green-hover: #0d5b4c;
   --color-muted: #6e6e73; /* secondary labels */
@@ -31,6 +32,31 @@ body {
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
+}
+
+/* Tailwind v4 resets buttons to cursor:default, which makes the whole app feel
+   unclickable. Restore the pointer for everything interactive, in one place. */
+button:not(:disabled),
+a[href],
+label[for],
+summary,
+select:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="menuitem"]:not(:disabled),
+[role="switch"]:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="color"]:not(:disabled),
+input[type="range"]:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+[role="switch"]:disabled,
+[role="menuitem"]:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 /* Typeform sets headings at normal weight and relies on size for hierarchy. */
