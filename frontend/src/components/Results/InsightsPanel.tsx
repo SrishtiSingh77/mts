@@ -28,11 +28,11 @@ export default function InsightsPanel({ summary, questionCount }: InsightsPanelP
   return (
     <div>
       <div className="flex items-center gap-3">
-        <button className="flex items-center gap-2 rounded-lg border border-hair bg-white px-3.5 py-2 text-[15px] text-ink">
+        <button className="flex items-center gap-2 rounded-lg border border-hair bg-surface px-3.5 py-2 text-[15px] text-ink">
           <span>All time</span>
           <Calendar className="h-4 w-4 text-muted" />
         </button>
-        <button className="flex items-center gap-2 rounded-lg border border-hair bg-white px-3.5 py-2 text-[15px] text-ink">
+        <button className="flex items-center gap-2 rounded-lg border border-hair bg-surface px-3.5 py-2 text-[15px] text-ink">
           <Monitor className="h-4 w-4 text-muted" />
           <span>All devices</span>
           <ChevronDown className="h-4 w-4 text-muted" />
@@ -55,11 +55,11 @@ export default function InsightsPanel({ summary, questionCount }: InsightsPanelP
         Views, starts and timing need partial-response capture, which this build does not record.
       </p>
 
-      <div className="mt-10 rounded-2xl border border-hair bg-white p-2">
-        <div className="rounded-xl bg-gradient-to-br from-[#eef8f4] to-[#d8efdf] p-9">
+      <div className="mt-10 rounded-2xl border border-hair bg-surface p-2">
+        <div className="rounded-xl bg-gradient-to-br from-[#eef8f4] to-[#d8efdf] p-9 dark:from-[#12241f] dark:to-[#16302a]">
           <div className="max-w-lg">
             <h3 className="text-[24px] text-ink">Question-by-question insights</h3>
-            <p className="mt-2.5 text-[15px] leading-relaxed text-[#2c5d4a]">
+            <p className="mt-2.5 text-[15px] leading-relaxed text-[#2c5d4a] dark:text-[#8fc9b5]">
               See where people abandon your form — the first step to improving your questions so you
               get more responses.
             </p>
@@ -73,7 +73,7 @@ export default function InsightsPanel({ summary, questionCount }: InsightsPanelP
               </button>
               <button
                 disabled
-                className="rounded-lg border border-[#a7d4c6] bg-white px-4 py-2.5 text-[15px] text-ink opacity-80"
+                className="rounded-lg border border-[#a7d4c6] bg-surface px-4 py-2.5 text-[15px] text-ink opacity-80"
               >
                 Learn more
               </button>

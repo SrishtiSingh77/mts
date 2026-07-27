@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
+import { endingLabel, questionLabel } from "@/lib/labels";
 import { questionTypeMeta } from "@/lib/questionTypes";
 import { FormResponseData, Question } from "@/types";
 
@@ -55,7 +56,7 @@ export default function ResponsesTable({
   const allSelected = responses.length > 0 && selectedIds.length === responses.length;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-hair bg-white">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-hair bg-surface">
       {/* Toolbar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-hair px-3 py-2.5">
         <span className="flex items-center gap-2 rounded-lg bg-panel px-3 py-1.5 text-[14px] text-ink">
@@ -145,7 +146,7 @@ export default function ResponsesTable({
                       <span className="flex h-5 w-6 shrink-0 items-center justify-center rounded bg-chip text-chip-ink">
                         <Icon className="h-3 w-3" />
                       </span>
-                      <span className="truncate">{question.title}</span>
+                      <span className="truncate">{questionLabel(question)}</span>
                     </span>
                   </Th>
                 );
@@ -209,12 +210,12 @@ export default function ResponsesTable({
 
                   <Td>
                     <span className="inline-block max-w-[150px] truncate rounded border border-hair bg-panel px-2 py-0.5 text-[13px] text-muted">
-                      A. {endingTitle}
+                      A. {endingLabel(endingTitle)}
                     </span>
                   </Td>
 
                   <Td>
-                    <span className="inline-block rounded bg-panel p-1.5 text-muted transition-colors group-hover:bg-chrome group-hover:text-white">
+                    <span className="inline-block rounded bg-panel p-1.5 text-muted transition-colors group-hover:bg-chrome group-hover:text-on-chrome">
                       <Maximize2 className="h-3.5 w-3.5" />
                     </span>
                   </Td>

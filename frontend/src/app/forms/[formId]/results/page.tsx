@@ -172,7 +172,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
   return (
     <div className="relative flex min-h-screen flex-col bg-stage">
       {/* Builder-style top bar so Results reads as a tab of the same form */}
-      <header className="flex h-[68px] shrink-0 items-center justify-between bg-white px-6">
+      <header className="flex h-[68px] shrink-0 items-center justify-between bg-surface px-6">
         <div className="flex min-w-0 items-center gap-2">
           <Link
             href={`/builder/${form.id}`}
@@ -195,7 +195,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
               {tab}
             </button>
           ))}
-          <span className="rounded-lg bg-black/[0.05] px-3.5 py-1.5 text-[15px] text-ink">Results</span>
+          <span className="rounded-lg bg-black/[0.05] dark:bg-white/[0.08] px-3.5 py-1.5 text-[15px] text-ink">Results</span>
         </nav>
 
         <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
@@ -204,7 +204,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
       </header>
 
       {/* Sub-navigation: underlined tabs, as in the reference */}
-      <div className="flex shrink-0 items-end gap-7 border-b border-hair bg-white px-6">
+      <div className="flex shrink-0 items-end gap-7 border-b border-hair bg-surface px-6">
         <span className="flex items-center gap-2 pb-3.5 text-[15px] text-faint" title="Coming soon">
           <span>Smart Insights</span>
           <Gem className="h-4 w-4 text-[#a7d4c6]" />
@@ -244,7 +244,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                 <h2 className="text-2xl font-extrabold text-ink">Summary</h2>
                 <a
                   href={responsesCsvUrl(form.id)}
-                  className="shadow-2xs flex items-center space-x-1.5 rounded-lg border border-hair bg-white px-3 py-1.5 text-xs font-medium text-ink hover:border-[#c9c9cf]"
+                  className="shadow-2xs flex items-center space-x-1.5 rounded-lg border border-hair bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:border-[#c9c9cf]"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>Export CSV</span>
@@ -280,7 +280,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
                   <button
                     onClick={handleGenerateTestResponse}
                     disabled={isGenerating}
-                    className="shadow-2xs cursor-pointer rounded-xl border border-hair bg-white px-4 py-2.5 text-xs font-semibold text-ink transition-all hover:border-[#c9c9cf] disabled:opacity-50"
+                    className="shadow-2xs cursor-pointer rounded-xl border border-hair bg-surface px-4 py-2.5 text-xs font-semibold text-ink transition-all hover:border-[#c9c9cf] disabled:opacity-50"
                   >
                     {isGenerating ? "Generating..." : "Generate test response"}
                   </button>
@@ -326,7 +326,7 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
       </div>
 
       {selectedIds.length > 0 && (
-        <div className="animate-fade-in fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 select-none items-center space-x-4 rounded-2xl border border-hair bg-white px-5 py-2.5 text-xs shadow-2xl">
+        <div className="animate-fade-in fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 select-none items-center space-x-4 rounded-2xl border border-hair bg-surface px-5 py-2.5 text-xs shadow-2xl">
           <span className="font-bold text-ink">{selectedIds.length} selected</span>
           <div className="h-4 w-px bg-hair" />
 

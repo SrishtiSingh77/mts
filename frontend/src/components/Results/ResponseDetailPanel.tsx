@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Hash, MoreVertical, Sparkles, Tag, X } from "lucide-react";
 
+import { endingLabel } from "@/lib/labels";
 import { questionTypeMeta } from "@/lib/questionTypes";
 import { Form, FormResponseData } from "@/types";
 
@@ -37,7 +38,7 @@ export default function ResponseDetailPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 32, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="z-30 flex h-full w-[420px] shrink-0 select-none flex-col border-l border-hair bg-white shadow-[-8px_0_24px_rgba(0,0,0,0.06)]"
+      className="z-30 flex h-full w-[420px] shrink-0 select-none flex-col border-l border-hair bg-surface shadow-[-8px_0_24px_rgba(0,0,0,0.06)]"
     >
       <div className="flex items-center justify-between border-b border-hair bg-panel p-4">
         <div className="flex items-center space-x-2">
@@ -85,7 +86,7 @@ export default function ResponseDetailPanel({
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto bg-stage p-5">
-        <div className="shadow-2xs space-y-2 rounded-2xl border border-hair/90 bg-white p-4">
+        <div className="shadow-2xs space-y-2 rounded-2xl border border-hair/90 bg-surface p-4">
           <div className="flex items-center space-x-1.5 text-xs font-semibold text-muted">
             <Tag className="h-3.5 w-3.5 text-muted" />
             <span>Tags</span>
@@ -102,11 +103,11 @@ export default function ResponseDetailPanel({
           return (
             <div
               key={answer.id || position}
-              className="shadow-2xs space-y-1.5 rounded-2xl border border-hair/90 bg-white p-4"
+              className="shadow-2xs space-y-1.5 rounded-2xl border border-hair/90 bg-surface p-4"
             >
               <div className="flex items-center space-x-2 text-xs font-bold text-ink">
                 <TypeIcon className={`h-3.5 w-3.5 flex-shrink-0 ${iconClass}`} />
-                <span>{answer.question_title || `Question ${position + 1}`}</span>
+                <span>{answer.question_title?.trim() || `Question ${position + 1}`}</span>
               </div>
               <p className="whitespace-pre-wrap pl-5 pt-1 text-sm font-semibold text-ink">
                 {answer.value || <span className="italic font-normal text-faint">Skipped</span>}
@@ -115,17 +116,17 @@ export default function ResponseDetailPanel({
           );
         })}
 
-        <div className="shadow-2xs space-y-2 rounded-2xl border border-hair/90 bg-white p-4">
+        <div className="shadow-2xs space-y-2 rounded-2xl border border-hair/90 bg-surface p-4">
           <div className="flex items-center space-x-2 text-xs font-bold text-ink">
             <Sparkles className="h-3.5 w-3.5 text-ink" />
             <span>Ending</span>
           </div>
           <span className="inline-block max-w-full truncate rounded-lg border bg-panel px-2.5 py-1 text-xs font-medium text-ink">
-            {form.ending.title}
+            {endingLabel(form.ending.title)}
           </span>
         </div>
 
-        <div className="shadow-2xs space-y-1.5 rounded-2xl border border-hair/90 bg-white p-4">
+        <div className="shadow-2xs space-y-1.5 rounded-2xl border border-hair/90 bg-surface p-4">
           <div className="flex items-center space-x-2 text-xs font-bold text-muted">
             <Hash className="h-3.5 w-3.5 text-faint" />
             <span>Response ID</span>

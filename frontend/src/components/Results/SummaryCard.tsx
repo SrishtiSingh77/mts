@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 
+import { FALLBACK_QUESTION_TITLE } from "@/lib/labels";
 import { QuestionSummary } from "@/types";
 
 interface SummaryCardProps {
@@ -13,13 +14,15 @@ interface SummaryCardProps {
 /** Stats are keyed off the question type, not off which fields happen to be non-null. */
 export default function SummaryCard({ summary, index, totalSubmissions }: SummaryCardProps) {
   return (
-    <div className="rounded-xl border border-hair bg-white p-6">
+    <div className="rounded-xl border border-hair bg-surface p-6">
       <header className="flex items-start justify-between gap-4 border-b border-hair pb-4">
         <div>
           <span className="text-[13px] uppercase tracking-wide text-muted">
             Question {index + 1} · {summary.question_type.replace(/_/g, " ")}
           </span>
-          <h3 className="mt-1 text-[19px] text-ink">{summary.question_title}</h3>
+          <h3 className="mt-1 text-[19px] text-ink">
+            {summary.question_title.trim() || FALLBACK_QUESTION_TITLE}
+          </h3>
         </div>
         <span className="shrink-0 rounded-full bg-panel px-3 py-1 text-[13px] text-muted">
           {summary.total_answers} of {totalSubmissions} answered
@@ -65,7 +68,7 @@ function ChoiceStats({ summary }: { summary: QuestionSummary }) {
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-panel">
             <div
-              className="h-full rounded-full bg-ink transition-all duration-500"
+              className="h-full rounded-full bg-inverse transition-all duration-500"
               style={{ width: `${option.percentage}%` }}
             />
           </div>
