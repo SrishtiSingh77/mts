@@ -4,6 +4,7 @@ import {
   FormResponseData,
   FormSummary,
   FormUpdatePayload,
+  LogicRule,
   Question,
   QuestionType,
 } from "@/types";
@@ -99,6 +100,13 @@ export const duplicateQuestion = (questionId: string) =>
 export const deleteQuestion = (questionId: string) =>
   request<{ message: string }>(`/questions/${questionId}`, { method: "DELETE" });
 
+/** Replaces a question's branching rules wholesale. */
+export const updateQuestionLogic = (questionId: string, rules: LogicRule[]) =>
+  request<Question>(`/questions/${questionId}/logic`, {
+    method: "PUT",
+    body: json({ rules }),
+  });
+
 export const reorderQuestions = (formId: string, orderedIds: string[]) =>
   request<{ message: string }>(`/questions/form/${formId}/reorder`, {
     method: "PUT",
@@ -110,11 +118,32 @@ export const reorderQuestions = (formId: string, orderedIds: string[]) =>
 type SubmitAnswer = { question_id: string; value: string };
 type SubmitResult = { message: string; response_id: string };
 
+/** Fire-and-forget view counter; failures must never block the respondent. */
+export const recordFormView = (shareId: string) =>
+  request<void>(`/forms/share/${shareId}/views`, { method: "POST" }).catch(() => undefined);
+
+/** Saves progress mid-flow and returns the row id to keep updating. */
+export const savePartialResponse = (
+  shareId: string,
+  answers: SubmitAnswer[],
+  responseId?: string,
+  lastQuestionId?: string
+) =>
+  request<{ response_id: string }>(`/forms/share/${shareId}/responses/partial`, {
+    method: "POST",
+    body: json({ answers, response_id: responseId, last_question_id: lastQuestionId }),
+  });
+
 /** Public submit path — only works while the form is published. */
-export const submitPublicResponse = (shareId: string, answers: SubmitAnswer[]) =>
+export const submitPublicResponse = (
+  shareId: string,
+  answers: SubmitAnswer[],
+  responseId?: string,
+  startedAt?: string
+) =>
   request<SubmitResult>(`/forms/share/${shareId}/responses`, {
     method: "POST",
-    body: json({ answers }),
+    body: json({ answers, response_id: responseId, started_at: startedAt }),
   });
 
 /** Creator-side submit, used by the results page's test-response generator. */
