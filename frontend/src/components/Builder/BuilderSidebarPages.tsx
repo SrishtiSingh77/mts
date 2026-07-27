@@ -110,7 +110,7 @@ export default function BuilderSidebarPages({
 
   if (collapsed) {
     return (
-      <aside className="relative w-3 shrink-0 select-none">
+      <aside className="relative hidden w-3 shrink-0 select-none lg:block">
         <button
           onClick={onToggleCollapsed}
           aria-label="Expand pages panel"
@@ -124,7 +124,7 @@ export default function BuilderSidebarPages({
   }
 
   return (
-    <aside className="group/rail relative flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+    <aside className="group/rail relative hidden w-[280px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1 lg:flex xl:w-[320px]">
       {/* Collapse handle sits on the Pages panel's left edge, shown on hover */}
       <button
         onClick={onToggleCollapsed}

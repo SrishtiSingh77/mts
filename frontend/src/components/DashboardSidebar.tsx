@@ -22,7 +22,7 @@ export default function DashboardSidebar({
   const usage = Math.min(100, (responseCount / RESPONSE_QUOTA) * 100);
 
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col border-r border-hair bg-surface">
+    <aside className="hidden w-[280px] shrink-0 select-none flex-col border-r border-hair bg-surface lg:flex xl:w-[320px]">
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 pb-5 pt-5">
           <button

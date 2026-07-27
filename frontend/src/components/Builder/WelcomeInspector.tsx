@@ -17,7 +17,7 @@ export default function WelcomeInspector({
   onRemove,
 }: WelcomeInspectorProps) {
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+    <aside className="hidden w-[300px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1 xl:flex xl:w-[320px]">
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl bg-panel p-4">
         <div className="mb-4 flex w-full items-center justify-between rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink">
           <span className="flex items-center gap-2.5">

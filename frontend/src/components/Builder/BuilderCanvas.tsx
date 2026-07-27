@@ -104,7 +104,7 @@ export default function BuilderCanvas({
 
       {/* Floating AI composer, placeholder only */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
-        <div className="pointer-events-auto flex w-[430px] items-center gap-3 rounded-full border border-[#e0d7f5] bg-surface px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <div className="pointer-events-auto flex w-[calc(100vw-2rem)] max-w-[430px] items-center gap-3 rounded-full border border-[#e0d7f5] bg-surface px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
           <Mic className="h-[18px] w-[18px] shrink-0 text-ink" />
           <input
             type="text"

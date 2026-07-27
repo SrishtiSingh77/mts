@@ -172,35 +172,39 @@ export default function FormResultsPage({ params }: { params: Promise<{ formId: 
   return (
     <div className="relative flex min-h-screen flex-col bg-stage">
       {/* Builder-style top bar so Results reads as a tab of the same form */}
-      <header className="flex h-[68px] shrink-0 items-center justify-between bg-surface px-6">
-        <div className="flex min-w-0 items-center gap-2">
+      <header className="flex h-[68px] shrink-0 items-center gap-3 bg-surface px-4 sm:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Link
             href={`/builder/${form.id}`}
             className="flex items-center gap-2 text-[15px] font-medium text-ink transition-opacity hover:opacity-70"
           >
-            <ChevronLeft className="h-[18px] w-[18px]" />
-            <span>Forms</span>
+            <ChevronLeft className="h-[18px] w-[18px] shrink-0" />
+            <span className="hidden sm:inline">Forms</span>
           </Link>
-          <span className="text-muted">›</span>
+          <span className="hidden text-muted sm:inline">›</span>
           <span className="truncate text-[15px] font-medium text-ink">{form.title}</span>
         </div>
 
-        <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
+        <nav className="no-scrollbar flex min-w-0 shrink items-center gap-1 overflow-x-auto">
           {["Content", "Workflow", "Connect", "Share"].map((tab) => (
             <button
               key={tab}
               onClick={() => router.push(`/builder/${form.id}?tab=${tab}`)}
-              className="rounded-lg px-3.5 py-1.5 text-[15px] text-muted transition-colors hover:text-ink"
+              className="shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[15px] text-muted transition-colors hover:text-ink lg:px-3.5"
             >
               {tab}
             </button>
           ))}
-          <span className="rounded-lg bg-black/[0.05] dark:bg-white/[0.08] px-3.5 py-1.5 text-[15px] text-ink">Results</span>
+          <span className="shrink-0 whitespace-nowrap rounded-lg bg-black/[0.05] px-2.5 py-1.5 text-[15px] text-ink lg:px-3.5 dark:bg-white/[0.08]">
+            Results
+          </span>
         </nav>
 
-        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
-          View plans
-        </button>
+        <div className="flex flex-1 justify-end">
+          <button className="hidden whitespace-nowrap rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:scale-[0.99] active:bg-[#178770] lg:block">
+            View plans
+          </button>
+        </div>
       </header>
 
       {/* Sub-navigation: underlined tabs, as in the reference */}

@@ -42,17 +42,17 @@ export default function BuilderHeader({
   };
 
   return (
-    <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center justify-between bg-surface px-6">
+    <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center gap-3 bg-surface px-4 sm:px-6">
       {/* Breadcrumb — the title is edited inline here */}
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <Link
           href="/"
           className="flex items-center gap-2 text-[15px] font-medium text-ink transition-opacity hover:opacity-70"
         >
-          <PanelsTopLeft className="h-[18px] w-[18px]" />
-          <span>Forms</span>
+          <PanelsTopLeft className="h-[18px] w-[18px] shrink-0" />
+          <span className="hidden sm:inline">Forms</span>
         </Link>
-        <span className="text-muted">›</span>
+        <span className="hidden text-muted sm:inline">›</span>
         <input
           type="text"
           value={draftTitle}
@@ -64,21 +64,22 @@ export default function BuilderHeader({
         />
       </div>
 
-      {/* Centre tab strip — active tab gets a pill plus a bar on the very top edge */}
-      <nav className="absolute left-1/2 top-0 flex -translate-x-1/2 items-center gap-1 pt-[18px]">
+      {/* Centre tab strip. A flex child rather than absolutely centred, so it can
+          never overlap the actions; it scrolls instead when space runs out. */}
+      <nav className="flex min-w-0 shrink items-center gap-1 no-scrollbar overflow-x-auto">
         {BUILDER_TABS.map((tab) => {
           const isActive = activeTab === tab;
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="relative px-1"
+              className="relative shrink-0 px-1"
             >
               {isActive && (
                 <span className="absolute -top-[18px] left-1/2 h-[3px] w-12 -translate-x-1/2 rounded-full bg-inverse" />
               )}
               <span
-                className={`block rounded-lg px-3.5 py-1.5 text-[15px] transition-colors ${
+                className={`block whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[15px] transition-colors lg:px-3.5 ${
                   isActive ? "bg-black/[0.05] dark:bg-white/[0.08] text-ink" : "text-muted hover:text-ink"
                 }`}
               >
@@ -89,7 +90,7 @@ export default function BuilderHeader({
         })}
       </nav>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-1 shrink-0 items-center justify-end gap-2 sm:gap-3">
         {activeTab === "Share" ? (
           <button
             onClick={handleCopyLink}
@@ -108,24 +109,24 @@ export default function BuilderHeader({
             onClick={() => setActiveTab("Share")}
             className="flex items-center gap-2 rounded-lg border border-hair px-3.5 py-2 text-[15px] text-ink transition-colors hover:bg-panel"
           >
-            <Play className="h-[16px] w-[16px]" />
-            <span>Share</span>
+            <Play className="h-[16px] w-[16px] shrink-0" />
+            <span className="hidden sm:inline">Share</span>
           </button>
         )}
 
-        <span className="h-6 w-px bg-hair" />
+        <span className="hidden h-6 w-px bg-hair sm:block" />
 
-        <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
+        <button className="hidden whitespace-nowrap rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:scale-[0.99] active:bg-[#178770] lg:block">
           View plans
         </button>
 
         <ThemeToggle />
 
-        <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
+        <button className="hidden text-muted transition-colors hover:text-ink md:block" aria-label="Help">
           <HelpCircle className="h-[22px] w-[22px]" />
         </button>
 
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0d9a8] text-[13px] font-medium text-[#7a5c1e]">
+        <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f0d9a8] text-[13px] font-medium text-[#7a5c1e] sm:flex">
           SS
         </span>
       </div>

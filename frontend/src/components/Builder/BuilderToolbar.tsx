@@ -27,18 +27,18 @@ export default function BuilderToolbar({
   onPreview,
 }: BuilderToolbarProps) {
   return (
-    <div className="ml-2 mr-4 mt-1 flex h-[52px] shrink-0 items-center gap-1 rounded-xl bg-panel px-2.5">
+    <div className="no-scrollbar ml-2 mr-2 mt-1 flex h-[52px] shrink-0 items-center gap-1 overflow-x-auto rounded-xl bg-panel px-2.5 lg:mr-4">
       <button
         onClick={onAddContent}
         className="flex items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
       >
         <Plus className="h-[18px] w-[18px]" />
-        <span>Add content</span>
+        <span className="whitespace-nowrap">Add content</span>
       </button>
 
       <button className="ml-2 flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] text-ink transition-colors hover:bg-black/[0.05] dark:hover:bg-white/[0.08]">
         <Palette className="h-[18px] w-[18px]" />
-        <span>Design</span>
+        <span className="hidden whitespace-nowrap sm:inline">Design</span>
       </button>
 
       <Separator />

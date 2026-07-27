@@ -20,7 +20,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
   return (
     <header className="select-none bg-surface">
       {/* Row 1 — organisation bar */}
-      <div className="flex h-[72px] items-center justify-between px-6">
+      <div className="flex h-[72px] items-center justify-between gap-3 px-4 sm:px-6">
         <button className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.06]">
           <span className="flex items-center">
             <TypeformLogo className="h-6 w-4 text-ink" />
@@ -30,16 +30,16 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
           <ChevronDown className="h-4 w-4 text-muted" />
         </button>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
             <Grid2x2 className="h-[18px] w-[18px]" />
-            <span>Integrations</span>
+            <span className="hidden lg:inline">Integrations</span>
           </button>
           <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
             <Palette className="h-[18px] w-[18px]" />
-            <span>Brand kit</span>
+            <span className="hidden lg:inline">Brand kit</span>
           </button>
-          <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
+          <button className="hidden whitespace-nowrap rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:scale-[0.99] active:bg-[#178770] sm:block">
             View plans
           </button>
           <ThemeToggle />
@@ -54,7 +54,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
       </div>
 
       {/* Row 2 — section tabs, active one carries a thick dark underline */}
-      <div className="flex items-end gap-1 border-b border-hair px-6">
+      <div className="no-scrollbar flex items-end gap-1 overflow-x-auto border-b border-hair px-4 sm:px-6">
         {NAV_TABS.map(({ label, icon: Icon, href }) => {
           const isActive = activeTab === label;
           const inner = (
@@ -71,7 +71,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
           return (
             <div
               key={label}
-              className={`pb-0 ${isActive ? "border-b-[3px] border-ink" : "border-b-[3px] border-transparent"}`}
+              className={`shrink-0 pb-0 ${isActive ? "border-b-[3px] border-ink" : "border-b-[3px] border-transparent"}`}
             >
               {href ? (
                 <Link href={href} className="block pb-2 pt-1">
@@ -86,7 +86,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
 
         <span className="mx-3 mb-3 h-6 w-px bg-hair" />
 
-        <div className="border-b-[3px] border-transparent">
+        <div className="shrink-0 border-b-[3px] border-transparent">
           <button className="flex items-center gap-2 pb-2 pt-1">
             <span className="flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] text-muted transition-colors hover:text-ink">
               <PanelsTopLeft className="h-[18px] w-[18px]" />

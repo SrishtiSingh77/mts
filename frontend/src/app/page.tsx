@@ -116,10 +116,10 @@ export default function DashboardPage() {
           responseCount={totalResponses}
         />
 
-        <main className="flex-1 overflow-y-auto px-10 py-7">
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-10 lg:py-7">
           {/* Workspace title row */}
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <h1 className="text-[30px] leading-none text-ink">My workspace</h1>
 
               <div>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
               <button className="flex items-center gap-2 text-[15px] text-ink transition-opacity hover:opacity-70">
                 <UserPlus className="h-[18px] w-[18px]" />
-                <span>Invite</span>
+                <span className="hidden sm:inline">Invite</span>
               </button>
               <Gem className="h-[18px] w-[18px] text-brand-green" />
             </div>
@@ -205,12 +205,12 @@ export default function DashboardPage() {
 
           {/* Column headers sit above a single hairline, right-aligned */}
           <div className="flex items-center border-b border-hair pb-2.5 text-[15px] text-muted">
-            <span className="flex-1" />
-            <span className="w-[110px] text-center">Responses</span>
-            <span className="w-[110px] text-center">Completed</span>
-            <span className="w-[130px]">Updated</span>
-            <span className="w-[120px]">Integrations</span>
-            <span className="w-[52px]" />
+            <span className="min-w-0 flex-1" />
+            <span className="w-[90px] shrink-0 text-center sm:w-[110px]">Responses</span>
+            <span className="hidden w-[110px] shrink-0 text-center lg:block">Completed</span>
+            <span className="hidden w-[130px] shrink-0 sm:block">Updated</span>
+            <span className="hidden w-[120px] shrink-0 xl:block">Integrations</span>
+            <span className="w-[44px] shrink-0 sm:w-[52px]" />
           </div>
 
           {loading ? (
@@ -335,8 +335,8 @@ function FormRow({
   const isPublished = form.status === "published";
 
   return (
-    <div className="relative flex items-center rounded-xl border border-hair px-4 py-3 transition-colors hover:border-[#d4d4d8]">
-      <button onClick={onOpen} className="flex flex-1 items-center gap-3.5 overflow-hidden text-left">
+    <div className="relative flex items-center rounded-xl border border-hair px-3 py-3 transition-colors hover:border-[#d4d4d8] sm:px-4">
+      <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden text-left sm:gap-3.5">
         <span className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-[#c79ae4] to-[#9333ea]" />
         <span className="truncate text-[15px] font-medium text-ink">{form.title}</span>
         {!isPublished && (
@@ -346,15 +346,18 @@ function FormRow({
         )}
       </button>
 
-      <button onClick={onResults} className="w-[110px] text-center text-[15px] text-ink hover:underline">
+      <button
+        onClick={onResults}
+        className="w-[90px] shrink-0 text-center text-[15px] text-ink hover:underline sm:w-[110px]"
+      >
         {form.response_count || <span className="text-faint">–</span>}
       </button>
 
-      <span className="w-[110px] text-center text-[15px] text-ink">
+      <span className="hidden w-[110px] shrink-0 text-center text-[15px] text-ink lg:block">
         {form.response_count || <span className="text-faint">–</span>}
       </span>
 
-      <span className="w-[130px] text-[15px] text-muted">
+      <span className="hidden w-[130px] shrink-0 text-[15px] text-muted sm:block">
         {new Date(form.updated_at).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -362,13 +365,13 @@ function FormRow({
         })}
       </span>
 
-      <span className="w-[120px]">
+      <span className="hidden w-[120px] shrink-0 xl:block">
         <span className="flex h-8 w-8 items-center justify-center rounded-md border border-hair text-muted">
           <Puzzle className="h-4 w-4" />
         </span>
       </span>
 
-      <div className="w-[52px] text-right">
+      <div className="w-[44px] shrink-0 text-right sm:w-[52px]">
         <button
           ref={menuButtonRef}
           onClick={(event) => {

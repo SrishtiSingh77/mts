@@ -30,7 +30,7 @@ export default function BuilderRightPanel({
   }, [typeMenuOpen]);
 
   if (!question) {
-    return <aside className="w-[320px] shrink-0 px-4 pb-4 pt-1" />;
+    return <aside className="hidden w-[300px] shrink-0 px-4 pb-4 pt-1 xl:block xl:w-[320px]" />;
   }
 
   const meta = questionTypeMeta(question.type);
@@ -42,7 +42,7 @@ export default function BuilderRightPanel({
     onUpdateQuestion({ options: next });
 
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+    <aside className="hidden w-[300px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1 xl:flex xl:w-[320px]">
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl bg-panel p-4">
         {/* Question / Video source */}
         <div className="mb-4">

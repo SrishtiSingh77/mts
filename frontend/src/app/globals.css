@@ -159,6 +159,15 @@ h3 {
   animation: fadeIn 0.25s ease-out forwards;
 }
 
+/* Horizontal tab strips scroll without showing a bar. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Respondent answer fields: a single hairline that thickens to the theme accent on focus. */
 .tf-underline {
   border-bottom: 2px solid var(--color-ink);
