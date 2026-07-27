@@ -22,10 +22,14 @@ import {
   ChevronRight,
   ChevronUp,
   Copy,
+  Gem,
+  Goal,
   Lightbulb,
+  ListChecks,
   MoreVertical,
   Plus,
   Rows3,
+  Tag,
   Trash2,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -34,6 +38,14 @@ import DropdownMenu, { MenuItem } from "@/components/ui/DropdownMenu";
 import { endingLabel } from "@/lib/labels";
 import { questionTypeMeta } from "@/lib/questionTypes";
 import { Question } from "@/types";
+
+/** Form modes Typeform offers. Only Universal is functional here; the rest are UI only. */
+const FORM_MODES = [
+  { label: "Universal mode", description: "Create any form.", icon: Rows3, available: true, pro: false },
+  { label: "Lead qualification mode", description: "Score and prioritize leads.", icon: Goal, available: false, pro: false },
+  { label: "Knowledge quiz mode", description: "Set correct answers.", icon: ListChecks, available: false, pro: true },
+  { label: "Match quiz mode", description: "Assign answers to endings.", icon: Tag, available: false, pro: false },
+] as const;
 
 interface BuilderSidebarPagesProps {
   questions: Question[];
@@ -72,6 +84,9 @@ export default function BuilderSidebarPages({
   collapsed,
   onToggleCollapsed,
 }: BuilderSidebarPagesProps) {
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const modeButtonRef = useRef<HTMLButtonElement>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -121,13 +136,48 @@ export default function BuilderSidebarPages({
       </button>
 
       {/* Mode selector — height matches the toolbar row so the two align */}
-      <button className="flex h-[52px] shrink-0 items-center justify-between rounded-xl bg-panel px-4 text-[15px] text-ink transition-colors hover:bg-hair">
+      <button
+        ref={modeButtonRef}
+        onClick={() => setModeMenuOpen(!modeMenuOpen)}
+        aria-haspopup="menu"
+        aria-expanded={modeMenuOpen}
+        className="flex h-[52px] shrink-0 items-center justify-between rounded-xl bg-panel px-4 text-[15px] text-ink transition-colors hover:bg-hair"
+      >
         <span className="flex items-center gap-2.5">
           <Rows3 className="h-[18px] w-[18px] text-ink" />
           <span>Universal mode</span>
         </span>
-        <ChevronDown className="h-[18px] w-[18px] text-muted" />
+        <ChevronDown
+          className={`h-[18px] w-[18px] text-muted transition-transform ${modeMenuOpen ? "rotate-180" : ""}`}
+        />
       </button>
+
+      <DropdownMenu
+        anchorRef={modeButtonRef}
+        open={modeMenuOpen}
+        onClose={() => setModeMenuOpen(false)}
+        placement="bottom-start"
+        width={288}
+      >
+        {FORM_MODES.map(({ label, description, icon: Icon, available, pro }) => (
+          <button
+            key={label}
+            role="menuitem"
+            onClick={() => setModeMenuOpen(false)}
+            title={available ? undefined : "Only Universal mode is available in this build"}
+            className={`flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors ${
+              available ? "bg-panel" : "hover:bg-panel"
+            }`}
+          >
+            <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-ink" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] text-ink">{label}</span>
+              <span className="block text-[13px] text-muted">{description}</span>
+            </span>
+            {pro && <Gem className="mt-0.5 h-4 w-4 shrink-0 text-[#a7d4c6]" />}
+          </button>
+        ))}
+      </DropdownMenu>
 
       {/* Pages panel */}
       <div className="flex min-h-0 flex-1 flex-col rounded-xl bg-panel p-4">
