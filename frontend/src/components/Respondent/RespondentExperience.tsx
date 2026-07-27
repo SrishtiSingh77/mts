@@ -104,6 +104,8 @@ export default function RespondentExperience({ form, preview }: RespondentExperi
       <FlowFooter
         index={flow.index}
         total={flow.questions.length}
+        canGoBack={flow.canGoBack}
+        isLast={flow.isLast}
         onPrev={flow.goBack}
         onNext={flow.goNext}
       />
