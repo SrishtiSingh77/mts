@@ -104,7 +104,7 @@ export default function DashboardPage() {
   const totalResponses = forms.reduce((sum, form) => sum + form.response_count, 0);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-surface">
       <Header activeTab="Forms" />
 
       <div className="flex flex-1 overflow-hidden">
@@ -220,7 +220,7 @@ export default function DashboardPage() {
               <p className="text-[17px] text-muted">No forms in this workspace yet.</p>
               <button
                 onClick={handleCreateForm}
-                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
               >
                 Create your first form
               </button>
@@ -272,7 +272,7 @@ export default function DashboardPage() {
 
       {renameTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="animate-fade-in w-full max-w-md space-y-5 rounded-2xl bg-white p-7 shadow-2xl">
+          <div className="animate-fade-in w-full max-w-md space-y-5 rounded-2xl bg-surface p-7 shadow-2xl">
             <h3 className="text-[22px] text-ink">Rename form</h3>
             <input
               type="text"
@@ -291,7 +291,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={handleSaveRename}
-                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
+                className="rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
               >
                 Save
               </button>

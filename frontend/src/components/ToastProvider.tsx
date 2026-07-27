@@ -25,7 +25,7 @@ const AUTO_DISMISS_MS = 3200;
 const VARIANTS: Record<ToastVariant, { icon: typeof Info; className: string }> = {
   success: { icon: CheckCircle2, className: "text-[#6ee7b7]" },
   error: { icon: AlertCircle, className: "text-red-400" },
-  info: { icon: Info, className: "text-white" },
+  info: { icon: Info, className: "text-on-inverse" },
 };
 
 let nextId = 0;
@@ -70,7 +70,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.18 }}
-                className="pointer-events-auto flex max-w-sm items-start space-x-2.5 rounded-xl bg-ink px-4 py-2.5 text-xs font-medium text-white shadow-xl"
+                className="pointer-events-auto flex max-w-sm items-start space-x-2.5 rounded-xl bg-inverse px-4 py-2.5 text-xs font-medium text-on-inverse shadow-xl"
               >
                 <Icon className={`mt-0.5 h-4 w-4 flex-shrink-0 ${className}`} />
                 <span className="flex-1 leading-relaxed">{message}</span>

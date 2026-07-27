@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronDown, Grid2x2, HelpCircle, Palette, PanelsTopLeft, Users, Workflow } from "lucide-react";
 
+import ThemeToggle from "./ThemeToggle";
 import TypeformLogo from "./TypeformLogo";
 
 interface HeaderProps {
@@ -17,10 +18,10 @@ const NAV_TABS = [
 
 export default function Header({ activeTab = "Forms" }: HeaderProps) {
   return (
-    <header className="select-none bg-white">
+    <header className="select-none bg-surface">
       {/* Row 1 — organisation bar */}
       <div className="flex h-[72px] items-center justify-between px-6">
-        <button className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 transition-colors hover:bg-black/[0.03]">
+        <button className="flex items-center gap-2.5 rounded-lg px-1 py-1.5 transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.06]">
           <span className="flex items-center">
             <TypeformLogo className="h-6 w-4 text-ink" />
             <span className="ml-1 h-8 w-8 rounded-lg bg-gradient-to-br from-[#b57bdc] to-[#9333ea]" />
@@ -41,6 +42,8 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
           <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
             View plans
           </button>
+          <ThemeToggle />
+
           <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
             <HelpCircle className="h-[22px] w-[22px]" />
           </button>
@@ -57,7 +60,7 @@ export default function Header({ activeTab = "Forms" }: HeaderProps) {
           const inner = (
             <span
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] transition-colors ${
-                isActive ? "bg-black/[0.04] text-ink" : "text-muted hover:text-ink"
+                isActive ? "bg-black/[0.04] dark:bg-white/[0.07] text-ink" : "text-muted hover:text-ink"
               }`}
             >
               <Icon className="h-[18px] w-[18px]" />

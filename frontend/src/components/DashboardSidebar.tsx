@@ -22,12 +22,12 @@ export default function DashboardSidebar({
   const usage = Math.min(100, (responseCount / RESPONSE_QUOTA) * 100);
 
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col border-r border-hair bg-white">
+    <aside className="flex w-[320px] shrink-0 select-none flex-col border-r border-hair bg-surface">
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 pb-5 pt-5">
           <button
             onClick={onCreateForm}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-chrome py-3 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-chrome py-3 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
           >
             <Plus className="h-[18px] w-[18px]" />
             <span>Create form</span>

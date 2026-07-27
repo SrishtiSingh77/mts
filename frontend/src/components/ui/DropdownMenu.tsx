@@ -107,7 +107,7 @@ export default function DropdownMenu({
         width,
         visibility: position ? "visible" : "hidden",
       }}
-      className="animate-fade-in z-[200] overflow-hidden rounded-xl border border-hair bg-white py-2 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
+      className="animate-fade-in z-[200] overflow-hidden rounded-xl border border-hair bg-surface py-2 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
     >
       {children}
     </div>,

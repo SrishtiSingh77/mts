@@ -35,7 +35,7 @@ export default function ErrorState({
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
               href={action.href}
-              className="rounded-md bg-ink px-6 py-3 text-[17px] font-medium text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+              className="rounded-md bg-inverse px-6 py-3 text-[17px] font-medium text-on-inverse transition-opacity hover:opacity-90 active:scale-[0.98]"
             >
               {action.label}
             </Link>
@@ -43,7 +43,7 @@ export default function ErrorState({
             {secondaryAction && (
               <Link
                 href={secondaryAction.href}
-                className="rounded-md border border-hair bg-white px-5 py-3 text-[17px] text-ink transition-colors hover:bg-panel"
+                className="rounded-md border border-hair bg-surface px-5 py-3 text-[17px] text-ink transition-colors hover:bg-panel"
               >
                 {secondaryAction.label}
               </Link>
@@ -53,9 +53,9 @@ export default function ErrorState({
       </div>
 
       <footer className="flex justify-end px-6 pb-6 sm:px-12">
-        <span className="flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-[13px] font-medium text-white">
+        <span className="flex items-center gap-1.5 rounded-md bg-inverse px-3 py-2 text-[13px] font-medium text-on-inverse">
           <span>Powered by</span>
-          <TypeformLogo className="h-3 w-4 text-white" />
+          <TypeformLogo className="h-3 w-4 text-on-inverse" />
           <span className="font-bold">Typeform</span>
         </span>
       </footer>
