@@ -27,6 +27,37 @@ class QuestionOptionSchema(ORMModel, QuestionOptionBase):
     question_id: str
 
 
+# --- Branching (logic jumps) ---
+class LogicRuleBase(BaseModel):
+    operator: str = "equals"
+    value: str = ""
+    #: None means jump to the ending screen.
+    target_question_id: Optional[str] = None
+
+    @field_validator("operator")
+    @classmethod
+    def _known_operator(cls, value: str) -> str:
+        if value not in validation.LOGIC_OPERATORS:
+            raise ValueError(f"Unsupported logic operator: {value}")
+        return value
+
+
+class LogicRuleCreate(LogicRuleBase):
+    pass
+
+
+class LogicRuleSchema(ORMModel, LogicRuleBase):
+    id: str
+    question_id: str
+    position: int = 0
+
+
+class LogicUpdate(BaseModel):
+    """Whole-set replace, so the builder never has to diff individual rules."""
+
+    rules: List[LogicRuleCreate] = []
+
+
 # --- Questions ---
 class QuestionBase(BaseModel):
     type: str = "short_text"
@@ -75,6 +106,7 @@ class QuestionSchema(ORMModel, QuestionBase):
     id: str
     form_id: str
     options: List[QuestionOptionSchema] = []
+    logic: List[LogicRuleSchema] = []
 
 
 # --- Forms ---
@@ -136,6 +168,7 @@ class FormSchema(ORMModel, FormBase):
     created_at: datetime
     updated_at: datetime
     response_count: int = 0
+    partial_count: int = 0
     theme: FormTheme = FormTheme()
     welcome: FormWelcome = FormWelcome()
     ending: FormEnding = FormEnding()
@@ -154,7 +187,8 @@ class FormSchema(ORMModel, FormBase):
             "share_id": data.share_id,
             "created_at": data.created_at,
             "updated_at": data.updated_at,
-            "response_count": len(data.responses),
+            "response_count": sum(1 for r in data.responses if r.is_complete),
+            "partial_count": sum(1 for r in data.responses if not r.is_complete),
             "questions": data.questions,
             "theme": {
                 "color": data.theme_color,
@@ -191,6 +225,22 @@ class AnswerInput(BaseModel):
 
 class SubmitResponseSchema(BaseModel):
     answers: List[AnswerInput]
+    # Set when finishing a response that was already saved partially, so the
+    # partial row is completed in place instead of creating a duplicate.
+    response_id: Optional[str] = None
+    started_at: Optional[datetime] = None
+
+
+class PartialResponseSchema(BaseModel):
+    """Progress snapshot. Not validated for completeness — it is mid-flight."""
+
+    answers: List[AnswerInput]
+    response_id: Optional[str] = None
+    last_question_id: Optional[str] = None
+
+
+class PartialResultSchema(BaseModel):
+    response_id: str
 
 
 class AnswerSchema(ORMModel):
@@ -205,6 +255,10 @@ class FormResponseSchema(ORMModel):
     id: str
     form_id: str
     submitted_at: datetime
+    is_complete: bool = True
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    last_question_id: Optional[str] = None
     answers: List[AnswerSchema] = []
 
 
@@ -233,6 +287,14 @@ class OptionStat(BaseModel):
     percentage: float
 
 
+class QuestionDropOff(BaseModel):
+    question_id: str
+    question_title: str
+    reached: int
+    dropped: int
+    drop_rate: float
+
+
 class QuestionSummary(BaseModel):
     question_id: str
     question_title: str
@@ -256,3 +318,11 @@ class FormSummaryResponse(BaseModel):
     total_responses: int
     completion_rate: float = 0.0
     questions_summary: List[QuestionSummary]
+
+    # Partial-response tracking
+    views: int = 0
+    starts: int = 0
+    submissions: int = 0
+    partials: int = 0
+    avg_completion_seconds: Optional[float] = None
+    drop_off: List[QuestionDropOff] = []

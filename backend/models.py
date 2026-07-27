@@ -77,6 +77,7 @@ class Form(Base):
         order_by="Question.position",
     )
     responses = relationship("FormResponse", back_populates="form", cascade="all, delete-orphan")
+    views = relationship("FormView", back_populates="form", cascade="all, delete-orphan")
 
 
 class Question(Base):
@@ -99,6 +100,33 @@ class Question(Base):
         order_by="QuestionOption.position",
     )
     answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan")
+    logic = relationship(
+        "QuestionLogic",
+        back_populates="question",
+        cascade="all, delete-orphan",
+        order_by="QuestionLogic.position",
+    )
+
+
+class QuestionLogic(Base):
+    """One branching rule on a question: if the answer matches, jump to target.
+
+    Rules are evaluated in `position` order and the first match wins. A null
+    `target_question_id` means jump straight to the ending screen.
+    """
+
+    __tablename__ = "question_logic"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    question_id = Column(
+        String, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position = Column(Integer, nullable=False, default=0)
+    operator = Column(String, nullable=False, default="equals")
+    value = Column(Text, nullable=False, default="")
+    target_question_id = Column(String, nullable=True)
+
+    question = relationship("Question", back_populates="logic")
 
 
 class QuestionOption(Base):
@@ -114,12 +142,32 @@ class QuestionOption(Base):
     question = relationship("Question", back_populates="options")
 
 
+class FormView(Base):
+    """One row per load of a published form, so Insights can report views vs starts."""
+
+    __tablename__ = "form_views"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    form_id = Column(String, ForeignKey("forms.id", ondelete="CASCADE"), nullable=False, index=True)
+    viewed_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    form = relationship("Form", back_populates="views")
+
+
 class FormResponse(Base):
     __tablename__ = "form_responses"
 
     id = Column(String, primary_key=True, default=generate_uuid)
     form_id = Column(String, ForeignKey("forms.id", ondelete="CASCADE"), nullable=False, index=True)
     submitted_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    # Partial-response tracking. is_complete defaults True because every row that
+    # predates this feature came from the old all-or-nothing submit path.
+    is_complete = Column(Boolean, nullable=False, default=True, index=True)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    # Furthest question reached, which is where a drop-off is attributed.
+    last_question_id = Column(String, nullable=True)
 
     form = relationship("Form", back_populates="responses")
     answers = relationship("Answer", back_populates="response", cascade="all, delete-orphan")

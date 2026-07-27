@@ -138,11 +138,103 @@ def validate_answer(question, value: str) -> Tuple[Optional[Dict[str, str]], str
     return None, value
 
 
+# --- Branching (logic jumps) ---
+
+LOGIC_OPERATORS = (
+    "equals",
+    "not_equals",
+    "contains",
+    "greater_than",
+    "less_than",
+    "is_answered",
+    "is_empty",
+)
+
+#: Sentinel target meaning "skip the rest and go to the ending screen".
+JUMP_TO_ENDING = "__ending__"
+
+
+def _as_number(text: str) -> Optional[float]:
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return None
+
+
+def rule_matches(rule, answer: str) -> bool:
+    """Evaluate one branching rule against an answer."""
+    given = (answer or "").strip()
+    expected = (rule.value or "").strip()
+
+    if rule.operator == "is_answered":
+        return given != ""
+    if rule.operator == "is_empty":
+        return given == ""
+    if rule.operator == "equals":
+        return given.casefold() == expected.casefold()
+    if rule.operator == "not_equals":
+        return given.casefold() != expected.casefold()
+    if rule.operator == "contains":
+        return expected.casefold() in given.casefold()
+
+    if rule.operator in ("greater_than", "less_than"):
+        left, right = _as_number(given), _as_number(expected)
+        if left is None or right is None:
+            return False
+        return left > right if rule.operator == "greater_than" else left < right
+
+    return False
+
+
+def resolve_next_question_id(question, answer: str, next_in_order: Optional[str]) -> Optional[str]:
+    """First matching rule wins; otherwise fall through to the next question."""
+    for rule in question.logic:
+        if rule_matches(rule, answer):
+            return rule.target_question_id or JUMP_TO_ENDING
+    return next_in_order
+
+
+def visited_path(form, submitted: Dict[str, str]):
+    """Replay the branching a respondent's answers imply, in order.
+
+    Only questions on this path are validated or stored — enforcing `required` on a
+    branch the respondent never saw would reject a perfectly valid submission.
+    """
+    questions = list(form.questions)
+    if not questions:
+        return []
+
+    by_id = {q.id: q for q in questions}
+    next_in_order = {
+        q.id: (questions[i + 1].id if i + 1 < len(questions) else None)
+        for i, q in enumerate(questions)
+    }
+
+    path = []
+    seen = set()
+    current_id: Optional[str] = questions[0].id
+
+    while current_id and current_id != JUMP_TO_ENDING:
+        # A rule pointing backwards would otherwise loop forever.
+        if current_id in seen or current_id not in by_id:
+            break
+        seen.add(current_id)
+
+        question = by_id[current_id]
+        path.append(question)
+        current_id = resolve_next_question_id(
+            question, submitted.get(question.id, ""), next_in_order[question.id]
+        )
+
+    return path
+
+
 def validate_submission(form, answers) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     """Validate a submission; returns (errors, normalized_answers).
 
-    Normalized answers only cover questions owned by this form, so a client cannot
-    smuggle in answers belonging to another form.
+    Normalized answers only cover questions owned by this form and reached on the
+    respondent's branch, so a client cannot smuggle in answers belonging to another
+    form and skipped branches are not treated as missing.
     """
     questions_by_id = {q.id: q for q in form.questions}
     errors: List[Dict[str, str]] = []
@@ -158,7 +250,7 @@ def validate_submission(form, answers) -> Tuple[List[Dict[str, str]], List[Dict[
         submitted[answer.question_id] = answer.value
 
     normalized: List[Dict[str, str]] = []
-    for question in form.questions:
+    for question in visited_path(form, submitted):
         error, value = validate_answer(question, submitted.get(question.id, ""))
         if error:
             errors.append(error)

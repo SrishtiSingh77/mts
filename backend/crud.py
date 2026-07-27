@@ -1,5 +1,6 @@
 import csv
 import io
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import func, or_
@@ -124,6 +125,7 @@ def duplicate_form(db: Session, form_id: str) -> Optional[models.Form]:
     db.add(new_form)
     db.flush()
 
+    id_map = {}
     for question in db_form.questions:
         new_question = models.Question(
             form_id=new_form.id,
@@ -136,10 +138,25 @@ def duplicate_form(db: Session, form_id: str) -> Optional[models.Form]:
         )
         db.add(new_question)
         db.flush()
+        id_map[question.id] = new_question.id
         for option in question.options:
             db.add(
                 models.QuestionOption(
                     question_id=new_question.id, label=option.label, position=option.position
+                )
+            )
+
+    # Branching rules are copied last so every target can be remapped onto the
+    # copy's own questions — otherwise they would point at the original form.
+    for question in db_form.questions:
+        for rule in question.logic:
+            db.add(
+                models.QuestionLogic(
+                    question_id=id_map[question.id],
+                    position=rule.position,
+                    operator=rule.operator,
+                    value=rule.value,
+                    target_question_id=id_map.get(rule.target_question_id),
                 )
             )
 
@@ -232,6 +249,45 @@ def update_question(
     return db_question
 
 
+def replace_question_logic(
+    db: Session, question_id: str, rules: List[schemas.LogicRuleCreate]
+) -> Optional[models.Question]:
+    """Swap a question's branching rules for a new set."""
+    db_question = db.query(models.Question).filter(models.Question.id == question_id).first()
+    if not db_question:
+        return None
+
+    # A target must be a question on the same form, or None (jump to ending).
+    sibling_ids = {
+        q.id
+        for q in db.query(models.Question)
+        .filter(models.Question.form_id == db_question.form_id)
+        .all()
+    }
+
+    db.query(models.QuestionLogic).filter(
+        models.QuestionLogic.question_id == question_id
+    ).delete(synchronize_session=False)
+
+    for index, rule in enumerate(rules):
+        target = rule.target_question_id
+        if target is not None and (target not in sibling_ids or target == question_id):
+            target = None
+        db.add(
+            models.QuestionLogic(
+                question_id=question_id,
+                position=index,
+                operator=rule.operator,
+                value=rule.value,
+                target_question_id=target,
+            )
+        )
+
+    db.commit()
+    db.refresh(db_question)
+    return db_question
+
+
 def duplicate_question(db: Session, question_id: str) -> Optional[models.Question]:
     db_question = db.query(models.Question).filter(models.Question.id == question_id).first()
     if not db_question:
@@ -264,6 +320,17 @@ def duplicate_question(db: Session, question_id: str) -> Optional[models.Questio
         db.add(
             models.QuestionOption(
                 question_id=new_question.id, label=option.label, position=option.position
+            )
+        )
+
+    for rule in db_question.logic:
+        db.add(
+            models.QuestionLogic(
+                question_id=new_question.id,
+                position=rule.position,
+                operator=rule.operator,
+                value=rule.value,
+                target_question_id=rule.target_question_id,
             )
         )
 
@@ -308,24 +375,96 @@ def reorder_questions(db: Session, form_id: str, ordered_question_ids: List[str]
 # --- Responses ---
 
 
-def submit_response(db: Session, form: models.Form, answers: List[dict]) -> models.FormResponse:
-    """Persist an already-validated, already-normalized submission."""
-    db_response = models.FormResponse(form_id=form.id)
-    db.add(db_response)
-    db.flush()
+def record_view(db: Session, form: models.Form) -> None:
+    """One row per public load, so Insights can separate views from starts."""
+    db.add(models.FormView(form_id=form.id))
+    db.commit()
 
+
+def _replace_answers(db: Session, response: models.FormResponse, answers: List[dict]) -> None:
+    db.query(models.Answer).filter(models.Answer.response_id == response.id).delete(
+        synchronize_session=False
+    )
     for answer in answers:
         db.add(
             models.Answer(
-                response_id=db_response.id,
+                response_id=response.id,
                 question_id=answer["question_id"],
                 value=answer["value"],
             )
         )
 
+
+def _owned_response(
+    db: Session, form: models.Form, response_id: Optional[str]
+) -> Optional[models.FormResponse]:
+    """Look up a response, refusing ids that belong to a different form."""
+    if not response_id:
+        return None
+    return (
+        db.query(models.FormResponse)
+        .filter(models.FormResponse.id == response_id, models.FormResponse.form_id == form.id)
+        .first()
+    )
+
+
+def save_partial_response(
+    db: Session,
+    form: models.Form,
+    answers: List[dict],
+    response_id: Optional[str] = None,
+    last_question_id: Optional[str] = None,
+) -> models.FormResponse:
+    """Create or update an in-progress response. Answers are replaced wholesale."""
+    now = datetime.utcnow()
+    response = _owned_response(db, form, response_id)
+
+    if response is None:
+        response = models.FormResponse(
+            form_id=form.id, is_complete=False, started_at=now, submitted_at=now
+        )
+        db.add(response)
+        db.flush()
+
+    # A completed response is never walked backwards by a late partial save.
+    if not response.is_complete:
+        response.last_question_id = last_question_id
+        response.submitted_at = now
+        _replace_answers(db, response, answers)
+
     db.commit()
-    db.refresh(db_response)
-    return db_response
+    db.refresh(response)
+    return response
+
+
+def submit_response(
+    db: Session,
+    form: models.Form,
+    answers: List[dict],
+    response_id: Optional[str] = None,
+    started_at: Optional[datetime] = None,
+) -> models.FormResponse:
+    """Persist an already-validated submission, completing a partial row if given."""
+    now = datetime.utcnow()
+    response = _owned_response(db, form, response_id)
+
+    if response is None:
+        response = models.FormResponse(form_id=form.id, started_at=started_at or now)
+        db.add(response)
+        db.flush()
+
+    response.is_complete = True
+    response.completed_at = now
+    response.submitted_at = now
+    response.last_question_id = None
+    if response.started_at is None:
+        response.started_at = started_at or now
+
+    _replace_answers(db, response, answers)
+
+    db.commit()
+    db.refresh(response)
+    return response
 
 
 def delete_responses(db: Session, form_id: str, response_ids: List[str]) -> int:
@@ -365,6 +504,10 @@ def get_form_responses(db: Session, form_id: str) -> List[dict]:
             "id": response.id,
             "form_id": response.form_id,
             "submitted_at": response.submitted_at,
+            "is_complete": response.is_complete,
+            "started_at": response.started_at,
+            "completed_at": response.completed_at,
+            "last_question_id": response.last_question_id,
             "answers": [
                 {
                     "id": answer.id,
@@ -381,11 +524,13 @@ def get_form_responses(db: Session, form_id: str) -> List[dict]:
 
 
 def responses_to_csv(db: Session, form: models.Form) -> str:
-    """One row per submission, one column per question, in question order."""
+    """One row per response, one column per question, in question order."""
     questions = list(form.questions)
     buffer = io.StringIO()
     writer = csv.writer(buffer)
-    writer.writerow(["Response ID", "Submitted At"] + [q.title for q in questions])
+    writer.writerow(
+        ["Response ID", "Submitted At", "Status"] + [q.title or "Untitled question" for q in questions]
+    )
 
     responses = (
         db.query(models.FormResponse)
@@ -397,7 +542,11 @@ def responses_to_csv(db: Session, form: models.Form) -> str:
     for response in responses:
         by_question = {answer.question_id: (answer.value or "") for answer in response.answers}
         writer.writerow(
-            [response.id, response.submitted_at.isoformat()]
+            [
+                response.id,
+                response.submitted_at.isoformat(),
+                "Completed" if response.is_complete else "Partial",
+            ]
             + [by_question.get(q.id, "") for q in questions]
         )
 
@@ -409,12 +558,21 @@ def get_form_summary_stats(db: Session, form_id: str) -> Optional[dict]:
     if not form:
         return None
 
-    total_responses = (
-        db.query(models.FormResponse).filter(models.FormResponse.form_id == form.id).count()
-    )
     questions = list(form.questions)
-    answered_cells = 0
+    responses = (
+        db.query(models.FormResponse).filter(models.FormResponse.form_id == form.id).all()
+    )
+    completed = [r for r in responses if r.is_complete]
+    partials = [r for r in responses if not r.is_complete]
 
+    views = db.query(models.FormView).filter(models.FormView.form_id == form.id).count()
+    # A "start" is anyone who saved any progress at all, complete or not.
+    starts = len(responses)
+    submissions = len(completed)
+
+    # Per-question stats come from completed responses only; a half-filled form
+    # would otherwise skew every average.
+    completed_ids = {r.id for r in completed}
     questions_summary = []
     for question in questions:
         values = [
@@ -422,9 +580,8 @@ def get_form_summary_stats(db: Session, form_id: str) -> Optional[dict]:
             for answer in db.query(models.Answer)
             .filter(models.Answer.question_id == question.id)
             .all()
-            if answer.value
+            if answer.value and answer.response_id in completed_ids
         ]
-        answered_cells += len(values)
 
         summary = {
             "question_id": question.id,
@@ -447,17 +604,51 @@ def get_form_summary_stats(db: Session, form_id: str) -> Optional[dict]:
 
         questions_summary.append(summary)
 
-    # Average share of questions answered per submission.
-    total_cells = total_responses * len(questions)
-    completion_rate = round(answered_cells / total_cells * 100, 1) if total_cells else 0.0
+    durations = [
+        (r.completed_at - r.started_at).total_seconds()
+        for r in completed
+        if r.completed_at and r.started_at
+    ]
 
     return {
         "form_id": form.id,
         "form_title": form.title,
-        "total_responses": total_responses,
-        "completion_rate": completion_rate,
+        "total_responses": submissions,
+        "completion_rate": round(submissions / starts * 100, 1) if starts else 0.0,
         "questions_summary": questions_summary,
+        "views": views,
+        "starts": starts,
+        "submissions": submissions,
+        "partials": len(partials),
+        "avg_completion_seconds": round(sum(durations) / len(durations), 1) if durations else None,
+        "drop_off": _drop_off(questions, partials, submissions),
     }
+
+
+def _drop_off(questions, partials, submissions: int) -> List[dict]:
+    """Per-question reach and abandonment, attributed to the furthest question reached."""
+    abandoned_at = {}
+    for response in partials:
+        if response.last_question_id:
+            abandoned_at[response.last_question_id] = abandoned_at.get(response.last_question_id, 0) + 1
+
+    # Everyone who reached question N also reached every question before it.
+    remaining = submissions + len(partials)
+    rows = []
+    for question in questions:
+        dropped = abandoned_at.get(question.id, 0)
+        rows.append(
+            {
+                "question_id": question.id,
+                "question_title": question.title,
+                "reached": remaining,
+                "dropped": dropped,
+                "drop_rate": round(dropped / remaining * 100, 1) if remaining else 0.0,
+            }
+        )
+        remaining -= dropped
+
+    return rows
 
 
 def _choice_stats(question: models.Question, values: List[str]) -> List[dict]:

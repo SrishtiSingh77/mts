@@ -1,5 +1,6 @@
 """Sample data so a fresh clone is immediately usable."""
 
+import datetime
 import json
 
 import models
@@ -58,6 +59,11 @@ SAMPLE_FORMS = [
             ("number", "How many team members use form tools in your company?", "Enter approximate head count", False, {}, []),
             ("long_text", "What is one improvement we should prioritize next?", "Feel free to share any details or suggestions", False, {}, []),
         ],
+        # (question index, [(operator, value, target index or None for ending)])
+        "logic": [(4, [("equals", "No", 7)])],
+        "views": 41,
+        # Each number is how many questions that person answered before leaving.
+        "partials": [2, 5, 1],
         "responses": [
             ["Vaibhav Kothari", "vaibhav.kothari@example.in", "Form Builder", "5", "Yes", "Software Engineer", "15", "The drag and drop builder is smooth. Would love logic jumps next."],
             ["Aditi Sharma", "aditi.sharma@quantleap.in", "Analytics & Reports", "4", "Yes", "Product Manager", "45", "CSV export and webhooks would be fantastic additions."],
@@ -102,6 +108,9 @@ SAMPLE_FORMS = [
             ("yes_no", "Do you need a vegetarian meal?", "", True, {}, []),
             ("long_text", "Anything we should know before you arrive?", "Accessibility needs, dietary notes, anything", False, {}, []),
         ],
+        "logic": [(4, [("equals", "Yes", 5)])],
+        "views": 22,
+        "partials": [1, 3],
         "responses": [
             ["Srishti Singh", "srishti.singh@northwind.in", "Cloud Infrastructure", "9", "No", "Travelling in from Pune, arriving late on day one."],
             ["Priya Nair", "priya.nair@quantleap.in", "AI & Machine Learning", "10", "Yes", ""],
@@ -135,6 +144,9 @@ SAMPLE_FORMS = [
             ("number", "How many years of experience do you have?", "", False, {}, []),
             ("yes_no", "Have you completed the security training?", "", True, {}, []),
         ],
+        "logic": [],
+        "views": 0,
+        "partials": [],
         "responses": [],
     },
 ]
@@ -205,12 +217,59 @@ def _seed_form(db, spec: dict) -> None:
             db.add(models.QuestionOption(question_id=question.id, label=label, position=index))
         questions.append(question)
 
-    for row in spec["responses"]:
-        response = models.FormResponse(form_id=form.id)
+    # Branching rules, added once every question has an id to point at.
+    for question_index, rules in spec.get("logic", []):
+        for position, (operator, value, target_index) in enumerate(rules):
+            db.add(
+                models.QuestionLogic(
+                    question_id=questions[question_index].id,
+                    position=position,
+                    operator=operator,
+                    value=value,
+                    target_question_id=(
+                        questions[target_index].id if target_index is not None else None
+                    ),
+                )
+            )
+
+    now = datetime.datetime.utcnow()
+
+    for index, row in enumerate(spec["responses"]):
+        started = now - datetime.timedelta(days=index + 1, seconds=95 + index * 20)
+        response = models.FormResponse(
+            form_id=form.id,
+            is_complete=True,
+            started_at=started,
+            completed_at=started + datetime.timedelta(seconds=95 + index * 20),
+            submitted_at=started + datetime.timedelta(seconds=95 + index * 20),
+        )
         db.add(response)
         db.flush()
         for question, value in zip(questions, row):
             db.add(models.Answer(response_id=response.id, question_id=question.id, value=value))
+
+    # Abandoned responses: answered the first N questions, then stopped.
+    first_row = spec["responses"][0] if spec["responses"] else []
+    for index, answered in enumerate(spec.get("partials", [])):
+        started = now - datetime.timedelta(hours=index + 2)
+        response = models.FormResponse(
+            form_id=form.id,
+            is_complete=False,
+            started_at=started,
+            submitted_at=started + datetime.timedelta(seconds=40),
+            last_question_id=questions[min(answered, len(questions) - 1)].id,
+        )
+        db.add(response)
+        db.flush()
+        for question, value in zip(questions[:answered], first_row[:answered]):
+            db.add(models.Answer(response_id=response.id, question_id=question.id, value=value))
+
+    for index in range(spec.get("views", 0)):
+        db.add(
+            models.FormView(
+                form_id=form.id, viewed_at=now - datetime.timedelta(hours=index * 3 + 1)
+            )
+        )
 
 
 if __name__ == "__main__":

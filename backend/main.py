@@ -111,6 +111,40 @@ def get_public_form(share_id: str, db: Session = Depends(get_db)):
     return form
 
 
+@app.post("/api/forms/share/{share_id}/views", status_code=204)
+def record_public_view(share_id: str, db: Session = Depends(get_db)):
+    """Fire-and-forget view counter for the Insights tab."""
+    form = crud.get_published_form_by_share_id(db, share_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="This form is not available.")
+    crud.record_view(db, form)
+    return Response(status_code=204)
+
+
+@app.post(
+    "/api/forms/share/{share_id}/responses/partial", response_model=schemas.PartialResultSchema
+)
+def save_public_partial(
+    share_id: str, payload: schemas.PartialResponseSchema, db: Session = Depends(get_db)
+):
+    """Save progress mid-flow. Deliberately not validated for completeness."""
+    form = crud.get_published_form_by_share_id(db, share_id)
+    if not form:
+        raise HTTPException(status_code=404, detail="This form is no longer accepting responses.")
+
+    # Still reject answers for questions that are not part of this form.
+    owned = {q.id for q in form.questions}
+    answers = [
+        {"question_id": a.question_id, "value": (a.value or "").strip()}
+        for a in payload.answers
+        if a.question_id in owned
+    ]
+    last = payload.last_question_id if payload.last_question_id in owned else None
+
+    response = crud.save_partial_response(db, form, answers, payload.response_id, last)
+    return {"response_id": response.id}
+
+
 @app.post("/api/forms/share/{share_id}/responses", response_model=schemas.SubmitResultSchema)
 def submit_public_response(
     share_id: str, payload: schemas.SubmitResponseSchema, db: Session = Depends(get_db)
@@ -136,7 +170,9 @@ def _validate_and_store(db: Session, form: models.Form, payload: schemas.SubmitR
             status_code=422,
             content={"detail": "Some answers need attention.", "errors": errors},
         )
-    response = crud.submit_response(db, form, normalized)
+    response = crud.submit_response(
+        db, form, normalized, payload.response_id, payload.started_at
+    )
     return {"message": "Response submitted successfully", "response_id": response.id}
 
 
@@ -172,6 +208,17 @@ def delete_question(question_id: str, db: Session = Depends(get_db)):
     if not crud.delete_question(db, question_id):
         raise HTTPException(status_code=404, detail="Question not found")
     return {"message": "Question deleted successfully"}
+
+
+@app.put("/api/questions/{question_id}/logic", response_model=schemas.QuestionSchema)
+def update_question_logic(
+    question_id: str, payload: schemas.LogicUpdate, db: Session = Depends(get_db)
+):
+    """Replace a question's branching rules. First matching rule wins at runtime."""
+    updated = crud.replace_question_logic(db, question_id, payload.rules)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return updated
 
 
 @app.put("/api/questions/form/{form_id}/reorder")
