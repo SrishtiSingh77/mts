@@ -2,6 +2,7 @@
 
 A functional clone of Typeform: a drag-and-drop form builder, publishable shareable links, the
 signature one-question-at-a-time respondent flow, and a results view with per-question stats.
+Includes two of the brief's bonus items — [CSV export](#csv-export) and [dark mode](#dark-mode).
 
 **Stack:** Next.js 15 (TypeScript) · FastAPI (Python) · SQLite
 
@@ -15,6 +16,7 @@ signature one-question-at-a-time respondent flow, and a results view with per-qu
 - [API overview](#api-overview)
 - [Validation](#validation)
 - [Features](#features)
+- [Bonus features](#bonus-features) — CSV export, dark mode
 - [Assumptions & scope](#assumptions--scope)
 - [Deployment](#deployment)
 
@@ -292,15 +294,77 @@ questions that auto-advance on select, inline validation, confetti thank-you scr
 "submit another response" path. No login required.
 
 **Results** — Insights, Summary and Responses tabs; per-question stats including a rating
-histogram; searchable submissions table; row detail side panel; multi-select bulk delete; CSV
-export; and a test-response generator that produces answers valid under the server's own rules.
+histogram; a submissions table with one column per question and a sliding row-detail panel;
+searchable; multi-select bulk delete; and a test-response generator that produces answers valid
+under the server's own rules.
 
-**Theme & thank-you settings** — a Settings tab with colour presets, accent and background colour
-pickers, a font choice, and editable thank-you screen copy. All of it persists on the form and is
-applied to the public respondent flow.
+**Welcome & thank-you screens** — both are editable **pages on the Content tab**, not buried in
+settings. Selecting one swaps the canvas for a centre-aligned editor and the inspector for that
+screen's options: "time to complete" and "number of submissions" toggles on the welcome screen,
+social icons and a call-to-action button on the ending. Either can be switched off entirely, in
+which case respondents land straight on question one.
+
+**Theme settings** — a Settings tab with colour presets, accent and background colour pickers and a
+font choice, persisted on the form and applied to the public respondent flow.
 
 **Toasts** — one app-wide provider (`components/ToastProvider.tsx`); every mutation reports success
 or failure through it.
+
+**Empty by default** — new questions and screens store blank titles so the editor shows its
+placeholder (`Your question here…`) rather than boilerplate the creator has to delete first.
+Read-only surfaces fall back to a label via `lib/labels.ts`.
+
+---
+
+## Bonus features
+
+Two of the brief's optional items are implemented.
+
+### CSV export
+
+`GET /api/forms/{form_id}/responses.csv` streams a download built in `crud.responses_to_csv`:
+
+```
+Response ID, Submitted At, <question 1 title>, <question 2 title>, …
+```
+
+One row per submission, one column per question **in question order**, with blanks for skipped
+answers — so the file lines up even when respondents skip optional questions. Reachable from two
+places in the UI: the **Export CSV** button on the Summary tab, and the download icon in the
+Responses toolbar. The filename is derived from the form title
+(`customer-product-feedback-responses.csv`).
+
+Because answers are normalized on write (`"yes"` → `"Yes"`, `"7.0"` → `"7"`, emails lowercased), the
+exported values are already consistent and need no post-processing in a spreadsheet.
+
+### Dark mode
+
+A light/dark toggle sits in the dashboard and builder headers. It persists to `localStorage`,
+follows the OS `prefers-color-scheme` until the user makes an explicit choice, and an inline script
+in `app/layout.tsx` applies the class **before first paint** so dark-mode users never see a white
+flash.
+
+The implementation is a token swap rather than hundreds of `dark:` utilities. `globals.css` declares
+the palette in `@theme`, and `.dark` re-points the same CSS variables:
+
+```css
+.dark {
+  --color-ink: #ededf0;
+  --color-surface: #1e1e23;
+  --color-panel: #26262d;
+  /* … */
+}
+```
+
+Tailwind v4 utilities compile to `var(--color-*)`, so every component already written against these
+tokens flips with no markup change. Two token *pairs* exist for this reason — `chrome`/`on-chrome`
+and `inverse`/`on-inverse` — because inverting a single "ink" token would have left white text on a
+now-light button.
+
+**The respondent flow deliberately does not follow dark mode.** Published forms render the theme the
+*creator* chose, so `/f/[shareId]` and `/preview/[formId]` are wrapped in `.tf-light-scope`, which
+resets the tokens to light. A visitor's OS preference must not override a creator's branding, and
+flipping the text token there would put near-white text on a light form background.
 
 ---
 
@@ -318,6 +382,13 @@ or failure through it.
 4. **Unanswered optional questions are stored as empty strings**, so a submission always has one
    answer row per question. This keeps "answered vs skipped" a data question, not an inference.
 5. **Rating scales run 1..N**, N clamped to 3–10, default 5.
+
+**Bonus items implemented:** CSV export and dark mode (both documented above), plus custom themes
+(accent, background and font per form).
+
+**Bonus items not attempted:** logic jumps / conditional branching, file-upload question type, and
+partial-response tracking. The third is the reason the Insights tab shows an em dash for views,
+starts and completion time instead of inventing numbers.
 
 **Deliberately left as placeholders** (per the brief): logic jumps and branching (Workflow tab),
 integrations and webhooks (Connect tab), team collaboration, file-upload and payment question
