@@ -4,7 +4,7 @@ A functional clone of Typeform: a drag-and-drop form builder,publishable shareab
 signature one-question-at-a-time respondent flow, and a results view with per-question stats.
 Includes two of the brief's bonus items — [CSV export](#csv-export) and [dark mode](#dark-mode).
 
-**Stack:** Next.js 15 (TypeScript) · FastAPI (Python) · SQLite
+**Stack:** Next.js 15 (TypeScript) · FastAPI (Python) · SQLite 
 
 ---
 
@@ -22,7 +22,7 @@ Includes two of the brief's bonus items — [CSV export](#csv-export) and [dark 
 
 ---
 
-## Quick start
+## Quick - start
 
 Two processes: FastAPI on `:8000`, Next.js on `:3000`.
 
