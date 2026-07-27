@@ -1,19 +1,32 @@
 @import "tailwindcss";
 
-/* Palette sampled from the reference screenshots in public/assets. */
+/* Class-based dark mode: the toggle puts .dark on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Palette sampled from the reference screenshots in public/assets.
+   Values live here for light mode; .dark below re-points the same variables, so
+   every component built on these tokens flips without touching its markup. */
 @theme {
-  --color-ink: #262627; /* respondent text, canvas dark */
-  --color-chrome: #2f2a33; /* app chrome buttons: Create form, Add content */
-  --color-chrome-hover: #1f1c23;
-  --color-chrome-pressed: #4a4350; /* lightens on :active so presses read */
-  --color-brand-green: #12705e; /* View plans, Upgrade plan */
-  --color-brand-green-hover: #0d5b4c;
+  --color-ink: #262627; /* primary text */
   --color-muted: #6e6e73; /* secondary labels */
   --color-faint: #9a9aa0; /* placeholders, disabled */
   --color-hair: #e6e6e8; /* borders */
+  --color-surface: #ffffff; /* cards, menus, rows */
   --color-panel: #f4f4f5; /* builder sidebar panels */
   --color-canvas: #fbfbfb; /* app page background */
   --color-stage: #f9f9f9; /* respondent background */
+
+  --color-chrome: #2f2a33; /* primary buttons */
+  --color-chrome-hover: #1f1c23;
+  --color-chrome-pressed: #4a4350; /* lightens on :active so presses read */
+  --color-on-chrome: #ffffff; /* text on a primary button */
+
+  --color-inverse: #262627; /* high-contrast chips, badges, toasts */
+  --color-on-inverse: #ffffff;
+
+  --color-brand-green: #12705e; /* View plans, Upgrade plan */
+  --color-brand-green-hover: #0d5b4c;
+
   --color-chip: #dfe2fb; /* question-type icon chips */
   --color-chip-ink: #3b3b6d;
 
@@ -21,17 +34,66 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-:root {
-  --background: #fbfbfb;
-  --foreground: #262627;
+.dark {
+  --color-ink: #ededf0;
+  --color-muted: #a2a2ab;
+  --color-faint: #6f6f7a;
+  --color-hair: #34343c;
+  --color-surface: #1e1e23;
+  --color-panel: #26262d;
+  --color-canvas: #16161a;
+  --color-stage: #16161a;
+
+  --color-chrome: #ededf0;
+  --color-chrome-hover: #ffffff;
+  --color-chrome-pressed: #c2c2cc;
+  --color-on-chrome: #1a1a1f;
+
+  --color-inverse: #ededf0;
+  --color-on-inverse: #1a1a1f;
+
+  --color-brand-green: #178a72;
+  --color-brand-green-hover: #1aa085;
+
+  --color-chip: #32335a;
+  --color-chip-ink: #c3c7f7;
+
+  color-scheme: dark;
+}
+
+/* The respondent flow renders the creator's chosen form theme, so it must not
+   follow the viewer's dark preference — that would override their branding and
+   put light text on a light background. This resets the tokens back to light. */
+.tf-light-scope {
+  --color-ink: #262627;
+  --color-muted: #6e6e73;
+  --color-faint: #9a9aa0;
+  --color-hair: #e6e6e8;
+  --color-surface: #ffffff;
+  --color-panel: #f4f4f5;
+  --color-canvas: #fbfbfb;
+  --color-stage: #f9f9f9;
+  --color-chrome: #2f2a33;
+  --color-chrome-hover: #1f1c23;
+  --color-chrome-pressed: #4a4350;
+  --color-on-chrome: #ffffff;
+  --color-inverse: #262627;
+  --color-on-inverse: #ffffff;
+  --color-chip: #dfe2fb;
+  --color-chip-ink: #3b3b6d;
+
+  color-scheme: light;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 /* Tailwind v4 resets buttons to cursor:default, which makes the whole app feel
