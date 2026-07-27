@@ -97,7 +97,10 @@ docs. Try `GET /api/forms` → **Execute**; it should return three seeded forms.
 | **Framework Preset** | `Next.js` (auto-detected) |
 | **Root Directory** | `frontend` |
 
-⚠️ **Root Directory must be `frontend`**, same reasoning as above.
+⚠️ **Root Directory must be `frontend`.** This repo has no `package.json` at its
+root, so if Root Directory is left blank Vercel finds no app, reports a *successful*
+deploy with nothing in it, and every URL returns `404: NOT_FOUND`. It is a project
+setting only — it cannot be set from `vercel.json`.
 
 ### 3. Add one environment variable
 
@@ -114,6 +117,10 @@ Two things people get wrong here:
 
 Click **Deploy**, wait ~1 minute. You'll get a URL like
 `https://mts-xyz.vercel.app`. That's your demo link.
+
+Open it. If you see Vercel's own `404: NOT_FOUND` page, Root Directory is wrong —
+fix it as above and redeploy. Changing Root Directory or any `NEXT_PUBLIC_*`
+variable always needs a fresh deploy, because Next.js inlines those at build time.
 
 ### 5. Lock down CORS (do this now)
 
@@ -243,6 +250,7 @@ still needs to be done by hand.
 | `/docs` shows "Failed to load API definition — 404 /openapi.json" | Cold start: the Swagger page loaded, then its follow-up fetch hit before uvicorn was ready | Reload the page. To stop it recurring, set **Health Check Path** to `/` so Render waits for the app before routing. |
 | Render build fails, `requirements.txt` not found | Root Directory not set | Set it to `backend` |
 | Vercel build fails, no `package.json` | Root Directory not set | Set it to `frontend` |
+| Every Vercel URL shows `404: NOT_FOUND` (Vercel's own page, not the app's) | Root Directory not set to `frontend`, so nothing was deployed | Settings → Build & Deployment → Root Directory → `frontend`, then **Redeploy**. The change is not retroactive. |
 | Responses disappeared | Option A, ephemeral disk | Expected — switch to Option B or C |
 | Public form link 404s | The form is a draft | Open it in the builder → **Share** → **Publish** |
 
