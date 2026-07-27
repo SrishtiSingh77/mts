@@ -1,6 +1,6 @@
 "use client";
 
-import { Plug, Workflow as WorkflowIcon } from "lucide-react";
+import { Plug } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
@@ -11,10 +11,11 @@ import BuilderRightPanel from "@/components/Builder/BuilderRightPanel";
 import BuilderSidebarPages from "@/components/Builder/BuilderSidebarPages";
 import BuilderToolbar from "@/components/Builder/BuilderToolbar";
 import ComingSoonPanel from "@/components/Builder/ComingSoonPanel";
+import EndingInspector from "@/components/Builder/EndingInspector";
 import SettingsTabView from "@/components/Builder/SettingsTabView";
 import ShareTabView from "@/components/Builder/ShareTabView";
-import EndingInspector from "@/components/Builder/EndingInspector";
 import WelcomeInspector from "@/components/Builder/WelcomeInspector";
+import WorkflowTabView from "@/components/Builder/WorkflowTabView";
 import ErrorState from "@/components/ErrorState";
 import { useToast } from "@/components/ToastProvider";
 import {
@@ -26,6 +27,7 @@ import {
   togglePublishForm,
   updateForm,
   updateQuestion,
+  updateQuestionLogic,
 } from "@/lib/api";
 import {
   Form,
@@ -33,6 +35,7 @@ import {
   FormTheme,
   FormUpdatePayload,
   FormWelcome,
+  LogicRule,
   Question,
   QuestionType,
   ENDING_PAGE_ID,
@@ -271,6 +274,31 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
   };
 
   /** Previews work on drafts; only the public /f/ link requires publishing. */
+  /** Branching rules save immediately; there is no partial state worth debouncing. */
+  const handleRulesChange = async (questionId: string, rules: LogicRule[]) => {
+    if (!form) return;
+    setForm({
+      ...form,
+      questions: (form.questions ?? []).map((q) => (q.id === questionId ? { ...q, logic: rules } : q)),
+    });
+    try {
+      const updated = await updateQuestionLogic(questionId, rules);
+      setForm((previous) =>
+        previous
+          ? {
+              ...previous,
+              questions: (previous.questions ?? []).map((q) =>
+                q.id === questionId ? updated : q
+              ),
+            }
+          : previous
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save that rule.");
+      loadForm();
+    }
+  };
+
   const handlePreview = () => {
     if (!form) return;
     if (!form.questions?.length) {
@@ -388,12 +416,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
       )}
 
       {activeTab === "Workflow" && (
-        <ComingSoonPanel
-          icon={WorkflowIcon}
-          title="Logic & branching"
-          description="Route respondents down different paths based on their answers."
-          features={["Logic jumps", "Conditional branching", "Question groups", "Calculated scores"]}
-        />
+        <WorkflowTabView questions={questions} onRulesChange={handleRulesChange} />
       )}
 
       {activeTab === "Connect" && (
