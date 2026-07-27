@@ -42,9 +42,14 @@ git push origin main
 | **Build Command** | `pip install -r requirements.txt` |
 | **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
 | **Instance Type** | `Free` |
+| **Health Check Path** | `/` |
 
 ⚠️ **Root Directory must be `backend`.** Leaving it blank is the single most
 common mistake — the build fails because `requirements.txt` isn't at the repo root.
+
+⚠️ **Set Health Check Path to `/`.** Without it, Render starts routing traffic
+before uvicorn has finished binding, so the first requests after the service wakes
+return 404 — see the `/docs` row in [Troubleshooting](#troubleshooting).
 
 ### 3. Add environment variables
 
@@ -235,6 +240,7 @@ still needs to be done by hand.
 | Frontend loads but no forms appear | `NEXT_PUBLIC_API_URL` wrong | Must end in `/api`, no trailing slash. Re-deploy after changing it — Next.js bakes `NEXT_PUBLIC_*` in at build time. |
 | Browser console: `CORS policy` error | `ALLOWED_ORIGINS` doesn't match | Set it to your exact Vercel URL, including `https://` |
 | First load takes ~50 seconds | Free Render service was asleep | Expected. Load it once beforehand. |
+| `/docs` shows "Failed to load API definition — 404 /openapi.json" | Cold start: the Swagger page loaded, then its follow-up fetch hit before uvicorn was ready | Reload the page. To stop it recurring, set **Health Check Path** to `/` so Render waits for the app before routing. |
 | Render build fails, `requirements.txt` not found | Root Directory not set | Set it to `backend` |
 | Vercel build fails, no `package.json` | Root Directory not set | Set it to `frontend` |
 | Responses disappeared | Option A, ephemeral disk | Expected — switch to Option B or C |
