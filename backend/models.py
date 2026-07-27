@@ -60,10 +60,8 @@ class Form(Base):
     theme_font = Column(String, nullable=False, default="sans")  # sans | serif | mono
 
     # Thank-you screen copy.
-    ending_title = Column(String, nullable=False, default="Thanks for completing this typeform")
-    ending_description = Column(
-        Text, nullable=False, default="Now create your own — it's free, easy & beautiful"
-    )
+    ending_title = Column(String, nullable=False, default="")
+    ending_description = Column(Text, nullable=False, default="")
     ending_button_label = Column(String, nullable=False, default="Create a typeform")
     ending_show_button = Column(Boolean, nullable=False, default=True)
     ending_show_social = Column(Boolean, nullable=False, default=True)
@@ -87,7 +85,7 @@ class Question(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     form_id = Column(String, ForeignKey("forms.id", ondelete="CASCADE"), nullable=False, index=True)
     type = Column(String, nullable=False, default="short_text")
-    title = Column(String, nullable=False, default="Untitled Question")
+    title = Column(String, nullable=False, default="")  # blank so the editor shows its placeholder
     description = Column(Text, nullable=True, default="")
     is_required = Column(Boolean, default=False)
     position = Column(Integer, default=0)

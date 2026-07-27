@@ -83,7 +83,7 @@ export const createQuestion = (
     method: "POST",
     body: json({
       type,
-      title: "Untitled Question",
+      title: "",
       description: "",
       is_required: false,
       ...overrides,

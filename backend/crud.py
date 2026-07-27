@@ -44,14 +44,15 @@ def create_form(db: Session, form: schemas.FormCreate) -> models.Form:
     db.commit()
     db.refresh(db_form)
 
-    # Seed a first question so the builder never opens empty.
+    # One blank question so the builder never opens empty; the editor shows its
+    # own placeholder rather than text the creator has to delete.
     db.add(
         models.Question(
             form_id=db_form.id,
             type="short_text",
-            title="What is your name?",
-            description="Please type your full name",
-            is_required=True,
+            title="",
+            description="",
+            is_required=False,
             position=0,
         )
     )

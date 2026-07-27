@@ -30,7 +30,7 @@ class QuestionOptionSchema(ORMModel, QuestionOptionBase):
 # --- Questions ---
 class QuestionBase(BaseModel):
     type: str = "short_text"
-    title: str = "Untitled Question"
+    title: str = ""
     description: Optional[str] = ""
     is_required: Optional[bool] = False
     position: Optional[int] = 0
@@ -97,8 +97,8 @@ class FormWelcome(BaseModel):
 
 
 class FormEnding(BaseModel):
-    title: str = "Thanks for completing this typeform"
-    description: str = "Now create your own — it's free, easy & beautiful"
+    title: str = ""
+    description: str = ""
     button_label: str = Field(default="Create a typeform", max_length=WELCOME_BUTTON_MAX_LENGTH)
     show_button: bool = True
     show_social: bool = True
