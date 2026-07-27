@@ -1,6 +1,6 @@
 # FormFlow — Typeform Clone
 
-A functional clone of Typeform: a drag-and-drop form builder, publishable shareable links, the
+A functional clone of Typeform: a drag-and-drop form builder,publishable shareable links, the
 signature one-question-at-a-time respondent flow, and a results view with per-question stats.
 Includes two of the brief's bonus items — [CSV export](#csv-export) and [dark mode](#dark-mode).
 
