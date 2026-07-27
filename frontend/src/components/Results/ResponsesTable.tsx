@@ -190,9 +190,18 @@ export default function ResponsesTable({
                   </Td>
 
                   <Td>
-                    <span className="inline-flex items-center rounded-full border border-[#a7d4c6] bg-[#e6f4ef] px-2.5 py-0.5 text-[12px] text-brand-green">
-                      Completed
-                    </span>
+                    {response.is_complete ? (
+                      <span className="inline-flex items-center rounded-full border border-[#a7d4c6] bg-[#e6f4ef] px-2.5 py-0.5 text-[12px] text-brand-green dark:bg-[#12241f]">
+                        Completed
+                      </span>
+                    ) : (
+                      <span
+                        className="inline-flex items-center rounded-full border border-[#f0d9a8] bg-[#fffaf0] px-2.5 py-0.5 text-[12px] text-[#a37413] dark:bg-[#241f12] dark:text-[#d9b45f]"
+                        title="Started but not submitted"
+                      >
+                        Partial
+                      </span>
+                    )}
                   </Td>
 
                   {questions.map((question) => {

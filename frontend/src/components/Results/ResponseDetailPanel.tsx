@@ -38,7 +38,7 @@ export default function ResponseDetailPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 32, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="z-30 flex h-full w-[420px] shrink-0 select-none flex-col border-l border-hair bg-surface shadow-[-8px_0_24px_rgba(0,0,0,0.06)]"
+      className="fixed inset-0 z-40 flex h-full w-full select-none flex-col border-hair bg-surface shadow-[-8px_0_24px_rgba(0,0,0,0.06)] sm:static sm:z-30 sm:w-[360px] sm:shrink-0 sm:border-l xl:w-[420px]"
     >
       <div className="flex items-center justify-between border-b border-hair bg-panel p-4">
         <div className="flex items-center space-x-2">
@@ -63,8 +63,14 @@ export default function ResponseDetailPanel({
           </span>
         </div>
 
-        <span className="ml-auto mr-2 inline-flex items-center rounded-full border border-[#a7d4c6] bg-[#e6f4ef] px-2.5 py-0.5 text-[12px] text-brand-green">
-          Completed
+        <span
+          className={`ml-auto mr-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[12px] ${
+            response.is_complete
+              ? "border-[#a7d4c6] bg-[#e6f4ef] text-brand-green dark:bg-[#12241f]"
+              : "border-[#f0d9a8] bg-[#fffaf0] text-[#a37413] dark:bg-[#241f12] dark:text-[#d9b45f]"
+          }`}
+        >
+          {response.is_complete ? "Completed" : "Partial"}
         </span>
 
         <button
