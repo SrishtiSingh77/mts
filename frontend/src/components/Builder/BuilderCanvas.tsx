@@ -38,7 +38,7 @@ export default function BuilderCanvas({
     <div className="relative flex min-w-0 flex-1 flex-col px-2 pb-4 pt-2">
       <div className="flex min-h-0 flex-1 items-stretch justify-center">
         <div
-          className={`w-full overflow-y-auto border border-hair bg-white/60 transition-all ${
+          className={`w-full overflow-y-auto border border-hair bg-surface/60 transition-all ${
             viewMode === "mobile"
               ? "mx-auto max-w-[400px] rounded-[28px] border-[10px] border-ink"
               : "rounded-md"
@@ -61,7 +61,7 @@ export default function BuilderCanvas({
             >
               {/* Question line — number badge then inline-editable title */}
               <div className="flex items-start gap-3">
-                <span className="mt-[9px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] bg-ink text-[12px] font-medium text-white">
+                <span className="mt-[9px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] bg-inverse text-[12px] font-medium text-on-inverse">
                   {questionNumber}
                 </span>
 
@@ -104,7 +104,7 @@ export default function BuilderCanvas({
 
       {/* Floating AI composer, placeholder only */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
-        <div className="pointer-events-auto flex w-[430px] items-center gap-3 rounded-full border border-[#e0d7f5] bg-white px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <div className="pointer-events-auto flex w-[430px] items-center gap-3 rounded-full border border-[#e0d7f5] bg-surface px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
           <Mic className="h-[18px] w-[18px] shrink-0 text-ink" />
           <input
             type="text"

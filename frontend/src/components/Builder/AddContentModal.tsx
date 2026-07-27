@@ -91,7 +91,7 @@ export default function AddContentModal({
               onClick={() => setTab(id)}
               className={`rounded-full px-4 py-2.5 text-[15px] transition-colors ${
                 tab === id
-                  ? "border border-hair bg-white text-ink shadow-sm"
+                  ? "border border-hair bg-surface text-ink shadow-sm"
                   : "text-muted hover:text-ink"
               }`}
             >
@@ -101,13 +101,13 @@ export default function AddContentModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="ml-auto rounded-full p-1.5 text-muted transition-colors hover:bg-black/[0.05] hover:text-ink"
+            className="ml-auto rounded-full p-1.5 text-muted transition-colors hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-white px-8 py-7">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-surface px-8 py-7">
           {tab === "elements" && (
             <div className="grid grid-cols-12 gap-8">
               {/* Left rail: search, recommended, apps */}
@@ -234,7 +234,7 @@ export default function AddContentModal({
               </div>
 
               <div className="col-span-12 space-y-4 lg:col-span-4">
-                <div className="rounded-lg border border-[#bcd7f5] bg-[#f5faff] p-4 text-[14px] text-ink">
+                <div className="rounded-lg border border-[#bcd7f5] bg-[#f5faff] p-4 text-[14px] text-ink dark:border-[#2c4a6b] dark:bg-[#111d28]">
                   <ul className="list-disc space-y-2 pl-4">
                     <li>Paste or type your questions in the text field</li>
                     <li>Each line becomes its own short-text question</li>
@@ -243,7 +243,7 @@ export default function AddContentModal({
                 <button
                   onClick={submitImport}
                   disabled={!importText.trim()}
-                  className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
+                  className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
                 >
                   Import questions
                 </button>
@@ -268,7 +268,7 @@ export default function AddContentModal({
               <button
                 onClick={submitAi}
                 disabled={isGenerating || !aiPrompt.trim()}
-                className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
+                className="w-full rounded-lg bg-chrome py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed disabled:cursor-not-allowed disabled:bg-[#c9c9cf]"
               >
                 {isGenerating ? "Generating questions..." : "Generate questions"}
               </button>

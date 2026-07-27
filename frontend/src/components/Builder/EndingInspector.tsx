@@ -14,7 +14,7 @@ export default function EndingInspector({ ending, onEndingChange }: EndingInspec
   return (
     <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl bg-panel p-4">
-        <div className="mb-4 flex w-full items-center justify-between rounded-lg bg-white px-3 py-2.5 text-[15px] text-ink">
+        <div className="mb-4 flex w-full items-center justify-between rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink">
           <span className="flex items-center gap-2.5">
             <span className="flex h-6 w-8 items-center justify-center rounded bg-chip text-chip-ink">
               <span className="text-[11px] font-bold">◐</span>
@@ -45,7 +45,7 @@ export default function EndingInspector({ ending, onEndingChange }: EndingInspec
               onChange={(event) => onEndingChange({ button_label: event.target.value })}
               placeholder="Create a typeform"
               aria-label="Ending button label"
-              className="w-full rounded-lg bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-faint focus:outline-none"
+              className="w-full rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink placeholder:text-faint focus:outline-none"
             />
             <p className="mt-1 text-right text-[12px] text-muted">
               {ending.button_label.length}/{WELCOME_BUTTON_MAX_LENGTH}
@@ -66,7 +66,7 @@ export default function EndingInspector({ ending, onEndingChange }: EndingInspec
             title="Custom redirect — coming soon"
             className="flex h-[22px] w-[38px] shrink-0 items-center justify-start rounded-full bg-[#c9c9cf] p-[3px] opacity-50"
           >
-            <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
+            <span className="h-4 w-4 rounded-full bg-surface shadow-sm" />
           </button>
         </div>
 
@@ -75,7 +75,7 @@ export default function EndingInspector({ ending, onEndingChange }: EndingInspec
           <button
             disabled
             title="Coming soon"
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-faint"
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-surface text-faint"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -106,7 +106,7 @@ function ToggleRow({
           checked ? "justify-end bg-chrome" : "justify-start bg-[#c9c9cf]"
         }`}
       >
-        <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
+        <span className="h-4 w-4 rounded-full bg-surface shadow-sm" />
       </button>
     </div>
   );

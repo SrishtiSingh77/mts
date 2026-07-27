@@ -37,14 +37,16 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
         {/* Publish state — the link only resolves while published */}
         <div
           className={`mt-7 flex items-center justify-between gap-4 rounded-xl border px-5 py-4 ${
-            isPublished ? "border-[#a7d4c6] bg-[#f2faf7]" : "border-[#f0d9a8] bg-[#fffaf0]"
+            isPublished
+              ? "border-[#a7d4c6] bg-[#f2faf7] dark:border-[#2f6b5c] dark:bg-[#12241f]"
+              : "border-[#f0d9a8] bg-[#fffaf0] dark:border-[#6b5a2f] dark:bg-[#241f12]"
           }`}
         >
           <div className="flex items-start gap-3">
             {isPublished ? (
               <Check className="mt-0.5 h-5 w-5 shrink-0 text-brand-green" />
             ) : (
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#a37413]" />
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#a37413] dark:text-[#d9b45f]" />
             )}
             <div>
               <p className="text-[15px] font-medium text-ink">
@@ -71,11 +73,11 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
         </div>
 
         {/* Link card */}
-        <div className="mt-5 rounded-xl border border-hair bg-white p-7">
+        <div className="mt-5 rounded-xl border border-hair bg-surface p-7">
           <div className="flex items-center gap-2.5">
             <button
               onClick={handleCopy}
-              className="flex shrink-0 items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.98]"
+              className="flex shrink-0 items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.98]"
             >
               {copied ? <Check className="h-[18px] w-[18px]" /> : <Link2 className="h-[18px] w-[18px]" />}
               <span>{copied ? "Copied!" : "Copy link"}</span>
@@ -143,7 +145,7 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
             <div
               key={label}
               title="Embedding — coming soon"
-              className="flex cursor-not-allowed items-center gap-4 overflow-hidden rounded-xl border border-hair bg-white"
+              className="flex cursor-not-allowed items-center gap-4 overflow-hidden rounded-xl border border-hair bg-surface"
             >
               <span
                 className={`flex h-[104px] w-[180px] shrink-0 items-center justify-center bg-gradient-to-br ${tint} text-white`}
@@ -159,7 +161,7 @@ export default function ShareTabView({ form, onTogglePublish }: ShareTabViewProp
           <button
             disabled
             title="Coming soon"
-            className="rounded-lg border border-hair bg-white px-5 py-2.5 text-[15px] text-faint"
+            className="rounded-lg border border-hair bg-surface px-5 py-2.5 text-[15px] text-faint"
           >
             Explore other ways to share
           </button>

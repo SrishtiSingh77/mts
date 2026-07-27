@@ -50,7 +50,7 @@ export default function BuilderRightPanel({
             Question
             <HelpCircle className="h-[15px] w-[15px] text-faint" />
           </span>
-          <div className="flex items-center gap-1 rounded-lg bg-white p-1">
+          <div className="flex items-center gap-1 rounded-lg bg-surface p-1">
             <span className="flex flex-1 items-center justify-center gap-2 rounded-md bg-panel py-2 text-[14px] text-ink">
               <TypeIcon className="h-4 w-4" />
               <span>Text</span>
@@ -71,7 +71,7 @@ export default function BuilderRightPanel({
         <div className="relative mb-1" ref={typeMenuRef}>
           <button
             onClick={() => setTypeMenuOpen(!typeMenuOpen)}
-            className="flex w-full items-center justify-between rounded-lg bg-white px-3 py-2.5 text-[15px] text-ink"
+            className="flex w-full items-center justify-between rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink"
           >
             <span className="flex items-center gap-2.5">
               <span className="flex h-6 w-8 items-center justify-center rounded bg-chip text-chip-ink">
@@ -83,7 +83,7 @@ export default function BuilderRightPanel({
           </button>
 
           {typeMenuOpen && (
-            <div className="animate-fade-in absolute left-0 right-0 top-full z-40 mt-1 max-h-72 overflow-y-auto rounded-xl border border-hair bg-white py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+            <div className="animate-fade-in absolute left-0 right-0 top-full z-40 mt-1 max-h-72 overflow-y-auto rounded-xl border border-hair bg-surface py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
               {QUESTION_TYPES.map(({ type, label, icon: Icon }) => (
                 <button
                   key={type}
@@ -148,7 +148,7 @@ export default function BuilderRightPanel({
                       next[index] = { ...next[index], label: event.target.value };
                       setOptions(next);
                     }}
-                    className="flex-1 rounded-md bg-white px-2.5 py-1.5 text-[14px] text-ink focus:outline-none"
+                    className="flex-1 rounded-md bg-surface px-2.5 py-1.5 text-[14px] text-ink focus:outline-none"
                   />
                   <button
                     onClick={() => setOptions(options.filter((_, i) => i !== index))}
@@ -172,7 +172,7 @@ export default function BuilderRightPanel({
                   setNewOption("");
                 }}
                 placeholder="Add option"
-                className="flex-1 rounded-md bg-white px-2.5 py-1.5 text-[14px] text-ink placeholder:text-faint focus:outline-none"
+                className="flex-1 rounded-md bg-surface px-2.5 py-1.5 text-[14px] text-ink placeholder:text-faint focus:outline-none"
               />
               <button
                 onClick={() => {
@@ -181,7 +181,7 @@ export default function BuilderRightPanel({
                   setNewOption("");
                 }}
                 aria-label="Add option"
-                className="rounded-md bg-chrome p-1.5 text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed"
+                className="rounded-md bg-chrome p-1.5 text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -202,7 +202,7 @@ export default function BuilderRightPanel({
           <button
             disabled
             title="Coming soon"
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-faint"
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-surface text-faint"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -247,7 +247,7 @@ function ToggleRow({
           checked ? "justify-end bg-chrome" : "justify-start bg-[#c9c9cf]"
         } disabled:opacity-50`}
       >
-        <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
+        <span className="h-4 w-4 rounded-full bg-surface shadow-sm" />
       </button>
     </div>
   );
@@ -267,7 +267,7 @@ function PanelRow({ label, premium }: { label: string; premium?: boolean }) {
       <button
         disabled
         title={`${label} — coming soon`}
-        className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-faint"
+        className="flex h-7 w-7 items-center justify-center rounded-md bg-surface text-faint"
       >
         <Plus className="h-4 w-4" />
       </button>

@@ -4,6 +4,7 @@ import { Check, HelpCircle, Link2, PanelsTopLeft, Play } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import ThemeToggle from "@/components/ThemeToggle";
 import { useToast } from "@/components/ToastProvider";
 import { Form } from "@/types";
 
@@ -41,7 +42,7 @@ export default function BuilderHeader({
   };
 
   return (
-    <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center justify-between bg-white px-6">
+    <header className="relative z-20 flex h-[68px] shrink-0 select-none items-center justify-between bg-surface px-6">
       {/* Breadcrumb — the title is edited inline here */}
       <div className="flex min-w-0 items-center gap-2">
         <Link
@@ -74,11 +75,11 @@ export default function BuilderHeader({
               className="relative px-1"
             >
               {isActive && (
-                <span className="absolute -top-[18px] left-1/2 h-[3px] w-12 -translate-x-1/2 rounded-full bg-ink" />
+                <span className="absolute -top-[18px] left-1/2 h-[3px] w-12 -translate-x-1/2 rounded-full bg-inverse" />
               )}
               <span
                 className={`block rounded-lg px-3.5 py-1.5 text-[15px] transition-colors ${
-                  isActive ? "bg-black/[0.05] text-ink" : "text-muted hover:text-ink"
+                  isActive ? "bg-black/[0.05] dark:bg-white/[0.08] text-ink" : "text-muted hover:text-ink"
                 }`}
               >
                 {tab}
@@ -117,6 +118,8 @@ export default function BuilderHeader({
         <button className="rounded-lg bg-brand-green px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-brand-green-hover active:bg-[#178770] active:scale-[0.99]">
           View plans
         </button>
+
+        <ThemeToggle />
 
         <button className="text-muted transition-colors hover:text-ink" aria-label="Help">
           <HelpCircle className="h-[22px] w-[22px]" />

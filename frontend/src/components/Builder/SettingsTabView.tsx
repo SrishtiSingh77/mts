@@ -34,7 +34,7 @@ export default function SettingsTabView({
     <div className="flex flex-1 overflow-hidden bg-panel">
       <div className="mx-auto w-full max-w-5xl space-y-6 overflow-y-auto p-8">
         {/* --- Theme --- */}
-        <section className="space-y-5 rounded-2xl border border-hair bg-white p-6 shadow-sm">
+        <section className="space-y-5 rounded-2xl border border-hair bg-surface p-6 shadow-sm">
           <header className="flex items-center space-x-2 border-b border-hair pb-3">
             <Palette className="h-4 w-4 text-ink" />
             <h2 className="text-sm font-bold text-ink">Theme</h2>
@@ -83,7 +83,7 @@ export default function SettingsTabView({
                     type="color"
                     value={theme.color}
                     onChange={(event) => patchTheme({ color: event.target.value })}
-                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-white p-1"
+                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-surface p-1"
                   />
                 </label>
                 <label className="space-y-1.5">
@@ -94,7 +94,7 @@ export default function SettingsTabView({
                     type="color"
                     value={theme.background}
                     onChange={(event) => patchTheme({ background: event.target.value })}
-                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-white p-1"
+                    className="h-9 w-full cursor-pointer rounded-lg border border-hair bg-surface p-1"
                   />
                 </label>
               </div>
@@ -159,7 +159,7 @@ export default function SettingsTabView({
         {/* Welcome and thank-you screens are edited as pages on the Content tab. */}
 
         {/* --- Not built --- */}
-        <section className="space-y-3 rounded-2xl border border-hair bg-white p-6 shadow-sm">
+        <section className="space-y-3 rounded-2xl border border-hair bg-surface p-6 shadow-sm">
           <header className="flex items-center space-x-2 border-b border-hair pb-3">
             <Lock className="h-4 w-4 text-faint" />
             <h2 className="text-sm font-bold text-ink">More settings</h2>
@@ -171,7 +171,7 @@ export default function SettingsTabView({
                 className="flex items-center justify-between rounded-lg border border-hair bg-panel px-3 py-2.5 text-xs text-muted"
               >
                 <span>{label}</span>
-                <span className="rounded bg-white px-1.5 py-0.5 text-[10px] font-medium text-ink">
+                <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink">
                   Coming Soon
                 </span>
               </div>

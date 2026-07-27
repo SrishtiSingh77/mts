@@ -56,6 +56,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
+  const [isRailCollapsed, setIsRailCollapsed] = useState(false);
 
   // Lets the dashboard context menu deep-link straight to a tab.
   useEffect(() => {
@@ -281,7 +282,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-white text-[15px] text-muted">
+      <div className="flex h-screen items-center justify-center bg-surface text-[15px] text-muted">
         Loading builder...
       </div>
     );
@@ -305,7 +306,7 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
   const activeIndex = questions.findIndex((q) => q.id === activeQuestionId);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-white">
+    <div className="flex h-screen flex-col overflow-hidden bg-surface">
       <BuilderHeader
         form={form}
         activeTab={activeTab}
@@ -315,14 +316,8 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
 
       {activeTab === "Content" && (
         <>
-          <BuilderToolbar
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            onAddContent={() => setIsAddContentOpen(true)}
-            onOpenSettings={() => setActiveTab("Settings")}
-            onPreview={handlePreview}
-          />
-
+          {/* Toolbar lives in the canvas column so it shares a row with the
+              sidebar's mode selector, as in the original. */}
           <div className="flex min-h-0 flex-1">
             <BuilderSidebarPages
               questions={questions}
@@ -339,20 +334,32 @@ export default function BuilderPage({ params }: { params: Promise<{ formId: stri
               onReorder={handleReorder}
               isEndingActive={isEndingSelected}
               onSelectEnding={() => setActiveQuestionId(ENDING_PAGE_ID)}
+              collapsed={isRailCollapsed}
+              onToggleCollapsed={() => setIsRailCollapsed((value) => !value)}
             />
 
-            <BuilderCanvas
-              form={form}
-              question={activeQuestion}
-              questionNumber={activeIndex + 1}
-              theme={form.theme}
-              viewMode={viewMode}
-              showWelcome={isWelcomeSelected}
-              showEnding={isEndingSelected}
-              onUpdateQuestion={handleUpdateQuestion}
-              onWelcomeChange={handleWelcomeChange}
-              onEndingChange={handleEndingChange}
-            />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <BuilderToolbar
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                onAddContent={() => setIsAddContentOpen(true)}
+                onOpenSettings={() => setActiveTab("Settings")}
+                onPreview={handlePreview}
+              />
+
+              <BuilderCanvas
+                form={form}
+                question={activeQuestion}
+                questionNumber={activeIndex + 1}
+                theme={form.theme}
+                viewMode={viewMode}
+                showWelcome={isWelcomeSelected}
+                showEnding={isEndingSelected}
+                onUpdateQuestion={handleUpdateQuestion}
+                onWelcomeChange={handleWelcomeChange}
+                onEndingChange={handleEndingChange}
+              />
+            </div>
 
             {isWelcomeSelected ? (
               <WelcomeInspector

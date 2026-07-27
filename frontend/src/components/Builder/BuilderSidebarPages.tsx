@@ -16,10 +16,22 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, Copy, Layers, Lightbulb, MoreVertical, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Copy,
+  Lightbulb,
+  MoreVertical,
+  Plus,
+  Rows3,
+  Trash2,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
 import DropdownMenu, { MenuItem } from "@/components/ui/DropdownMenu";
+import { endingLabel } from "@/lib/labels";
 import { questionTypeMeta } from "@/lib/questionTypes";
 import { Question } from "@/types";
 
@@ -38,6 +50,8 @@ interface BuilderSidebarPagesProps {
   onDuplicateQuestion: (id: string) => void;
   onDeleteQuestion: (id: string) => void;
   onReorder: (questions: Question[]) => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }
 
 export default function BuilderSidebarPages({
@@ -55,6 +69,8 @@ export default function BuilderSidebarPages({
   onDuplicateQuestion,
   onDeleteQuestion,
   onReorder,
+  collapsed,
+  onToggleCollapsed,
 }: BuilderSidebarPagesProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -77,15 +93,40 @@ export default function BuilderSidebarPages({
     );
   };
 
+  if (collapsed) {
+    return (
+      <aside className="relative w-3 shrink-0 select-none">
+        <button
+          onClick={onToggleCollapsed}
+          aria-label="Expand pages panel"
+          title="Expand pages panel"
+          className="absolute -right-3 top-[86px] z-20 flex h-6 w-6 items-center justify-center rounded-full bg-inverse text-on-inverse shadow-md transition-transform hover:scale-110"
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </aside>
+    );
+  }
+
   return (
-    <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+    <aside className="group/rail relative flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
+      {/* Collapse handle sits on the Pages panel's left edge, shown on hover */}
+      <button
+        onClick={onToggleCollapsed}
+        aria-label="Collapse pages panel"
+        title="Collapse pages panel"
+        className="absolute left-4 top-[124px] z-20 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full bg-[#6e6e73] text-white opacity-0 shadow-md transition-all hover:bg-inverse hover:text-on-inverse group-hover/rail:opacity-100"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
       {/* Mode selector — height matches the toolbar row so the two align */}
-      <button className="flex h-[52px] shrink-0 items-center justify-between rounded-xl bg-panel px-4 text-[15px] text-[#6b5ea8] transition-colors hover:bg-[#ececee]">
+      <button className="flex h-[52px] shrink-0 items-center justify-between rounded-xl bg-panel px-4 text-[15px] text-ink transition-colors hover:bg-hair">
         <span className="flex items-center gap-2.5">
-          <Layers className="h-[18px] w-[18px]" />
+          <Rows3 className="h-[18px] w-[18px] text-ink" />
           <span>Universal mode</span>
         </span>
-        <ChevronDown className="h-4 w-4 text-muted" />
+        <ChevronDown className="h-[18px] w-[18px] text-muted" />
       </button>
 
       {/* Pages panel */}
@@ -93,7 +134,7 @@ export default function BuilderSidebarPages({
         <span className="mb-3 px-1 text-[15px] font-medium text-ink">Pages</span>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="rounded-lg bg-white/70 p-1.5">
+          <div className="rounded-lg bg-surface/70 p-1.5">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={questions.map((q) => q.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-1">
@@ -117,7 +158,7 @@ export default function BuilderSidebarPages({
 
             <button
               onClick={onAddQuestion}
-              className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-[15px] text-ink transition-colors hover:bg-black/[0.04]"
+              className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-[15px] text-ink transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.07]"
             >
               <Plus className="h-[18px] w-[18px]" />
               <span>Add content</span>
@@ -131,7 +172,7 @@ export default function BuilderSidebarPages({
               welcomeEnabled
                 ? isWelcomeActive
                   ? "bg-panel text-ink"
-                  : "bg-white text-ink hover:bg-white/70"
+                  : "bg-surface text-ink hover:bg-surface/70"
                 : "border border-dashed border-[#d4d4d8] text-muted hover:border-[#b8b8bf]"
             }`}
           >
@@ -152,16 +193,16 @@ export default function BuilderSidebarPages({
             onClick={onSelectEnding}
             aria-label="Edit ending"
             title="Edit the thank-you screen"
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-muted transition-colors hover:text-ink"
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-surface text-muted transition-colors hover:text-ink"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
         <button
           onClick={onSelectEnding}
-          title={endingTitle}
+          title={endingLabel(endingTitle)}
           className={`mt-2.5 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors ${
-            isEndingActive ? "bg-white" : "hover:bg-white/70"
+            isEndingActive ? "bg-surface" : "hover:bg-surface/70"
           }`}
         >
           <span className="flex h-7 w-9 shrink-0 items-center justify-center rounded-md bg-chip text-[11px] font-bold text-chip-ink">
@@ -222,7 +263,7 @@ function PageItem({
       title={question.title}
       className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2 py-2 transition-colors ${
         isActive ? "bg-panel" : "hover:bg-panel/70"
-      } ${isDragging ? "bg-white opacity-90 shadow-md" : ""}`}
+      } ${isDragging ? "bg-surface opacity-90 shadow-md" : ""}`}
     >
       {/* Drag from the chip; the options button stays clickable. */}
       <span

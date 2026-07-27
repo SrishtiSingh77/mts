@@ -19,7 +19,7 @@ export default function WelcomeInspector({
   return (
     <aside className="flex w-[320px] shrink-0 select-none flex-col gap-2 px-4 pb-4 pt-1">
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl bg-panel p-4">
-        <div className="mb-4 flex w-full items-center justify-between rounded-lg bg-white px-3 py-2.5 text-[15px] text-ink">
+        <div className="mb-4 flex w-full items-center justify-between rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink">
           <span className="flex items-center gap-2.5">
             <span className="flex h-6 w-8 items-center justify-center rounded bg-chip text-chip-ink">
               <span className="text-[11px] font-bold">◑</span>
@@ -51,7 +51,7 @@ export default function WelcomeInspector({
             onChange={(event) => onWelcomeChange({ button_label: event.target.value })}
             placeholder="Start"
             aria-label="Welcome button label"
-            className="w-full rounded-lg bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-faint focus:outline-none"
+            className="w-full rounded-lg bg-surface px-3 py-2.5 text-[15px] text-ink placeholder:text-faint focus:outline-none"
           />
           <p className="mt-1 text-right text-[12px] text-muted">
             {welcome.button_label.length}/{WELCOME_BUTTON_MAX_LENGTH}
@@ -63,7 +63,7 @@ export default function WelcomeInspector({
           <button
             disabled
             title="Coming soon"
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-faint"
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-surface text-faint"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -107,7 +107,7 @@ function ToggleRow({
           checked ? "justify-end bg-chrome" : "justify-start bg-[#c9c9cf]"
         }`}
       >
-        <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
+        <span className="h-4 w-4 rounded-full bg-surface shadow-sm" />
       </button>
     </div>
   );

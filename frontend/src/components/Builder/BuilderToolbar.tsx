@@ -27,16 +27,16 @@ export default function BuilderToolbar({
   onPreview,
 }: BuilderToolbarProps) {
   return (
-    <div className="mx-4 mt-1 flex h-[52px] items-center gap-1 rounded-xl bg-panel px-2.5">
+    <div className="ml-2 mr-4 mt-1 flex h-[52px] shrink-0 items-center gap-1 rounded-xl bg-panel px-2.5">
       <button
         onClick={onAddContent}
-        className="flex items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-white transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
+        className="flex items-center gap-2 rounded-lg bg-chrome px-4 py-2.5 text-[15px] font-medium text-on-chrome transition-colors hover:bg-chrome-hover active:bg-chrome-pressed active:scale-[0.99]"
       >
         <Plus className="h-[18px] w-[18px]" />
         <span>Add content</span>
       </button>
 
-      <button className="ml-2 flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] text-ink transition-colors hover:bg-black/[0.05]">
+      <button className="ml-2 flex items-center gap-2 rounded-lg px-3 py-2 text-[15px] text-ink transition-colors hover:bg-black/[0.05] dark:hover:bg-white/[0.08]">
         <Palette className="h-[18px] w-[18px]" />
         <span>Design</span>
       </button>
@@ -98,7 +98,7 @@ function IconButton({
       aria-label={label}
       title={disabled ? `${label} — coming soon` : label}
       className={`rounded-lg p-2 transition-colors ${
-        active ? "bg-white text-ink shadow-sm" : "text-ink hover:bg-black/[0.05]"
+        active ? "bg-surface text-ink shadow-sm" : "text-ink hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
       } disabled:cursor-not-allowed disabled:text-faint disabled:hover:bg-transparent`}
     >
       {children}
