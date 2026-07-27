@@ -397,6 +397,26 @@ Each is visible in the UI marked *Coming Soon* rather than hidden.
 
 ---
 
+## Repositories
+
+| Repository | Contents |
+| --- | --- |
+| [`mts`](https://github.com/SrishtiSingh77/mts) | This monorepo — backend, frontend, docs |
+| [`scalerAssignment1`](https://github.com/SrishtiSingh77/scalerAssignment1) | Frontend only, with `package.json` at the root |
+
+The second is generated from `frontend/` with `git subtree`, so it is a plain
+Next.js app that Vercel detects with Root Directory left blank. Keep both in sync
+with one command:
+
+```bash
+./scripts/push-all.sh
+```
+
+That pushes the monorepo to `origin` and re-splits `frontend/` to the frontend
+repository. Never push only one of them, or the two drift apart.
+
+---
+
 ## Deployment
 
 **See [DEPLOYMENT.md](DEPLOYMENT.md)** for a step-by-step walkthrough — backend on Render,
