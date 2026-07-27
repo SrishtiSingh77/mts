@@ -41,10 +41,14 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     };
   }, [shareId]);
 
-  if (loading) return <LoadingScreen />;
+  // tf-light-scope pins the colour tokens back to light: this flow renders the
+  // creator's chosen form theme, not the viewer's dark preference.
+  const wrap = (node: React.ReactNode) => <div className="tf-light-scope">{node}</div>;
+
+  if (loading) return wrap(<LoadingScreen />);
 
   if (loadError || !form) {
-    return (
+    return wrap(
       <ErrorState
         title="This form isn't available"
         description="The link may be invalid, or the creator has unpublished it. If someone sent you this link, ask them to publish the form and share it again."
@@ -53,5 +57,5 @@ export default function PublicFormPage({ params }: { params: Promise<{ shareId: 
     );
   }
 
-  return <RespondentExperience form={form} />;
+  return wrap(<RespondentExperience form={form} />);
 }

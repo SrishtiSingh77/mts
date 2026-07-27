@@ -3,6 +3,7 @@
 import { Check, RotateCcw } from "lucide-react";
 
 import SocialShareIcons from "@/components/SocialShareIcons";
+import { endingHeadline } from "@/lib/labels";
 import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 import PoweredByFooter from "./PoweredByFooter";
@@ -33,7 +34,7 @@ export default function EndingScreen({
             <Check className="h-9 w-9 stroke-[2.5]" />
           </span>
 
-          <h1 className="mt-7 text-[28px] leading-snug text-ink">{ending.title}</h1>
+          <h1 className="mt-7 text-[28px] leading-snug text-ink">{endingHeadline(form)}</h1>
           <p className="mt-2 text-[17px] text-muted">{ending.description}</p>
 
           {ending.show_social && <SocialShareIcons className="mt-7" />}

@@ -32,10 +32,14 @@ export default function FormPreviewPage({ params }: { params: Promise<{ formId: 
     };
   }, [formId]);
 
-  if (loading) return <LoadingScreen />;
+  // tf-light-scope pins the colour tokens back to light: this flow renders the
+  // creator's chosen form theme, not the viewer's dark preference.
+  const wrap = (node: React.ReactNode) => <div className="tf-light-scope">{node}</div>;
+
+  if (loading) return wrap(<LoadingScreen />);
 
   if (loadError || !form) {
-    return (
+    return wrap(
       <ErrorState
         code="404"
         title="Nothing to preview"
@@ -46,7 +50,7 @@ export default function FormPreviewPage({ params }: { params: Promise<{ formId: 
   }
 
   if (!form.questions?.length) {
-    return (
+    return wrap(
       <ErrorState
         title="This form has no questions yet"
         description="Add at least one question on the Content tab, then preview it again."
@@ -55,5 +59,5 @@ export default function FormPreviewPage({ params }: { params: Promise<{ formId: 
     );
   }
 
-  return <RespondentExperience form={form} preview />;
+  return wrap(<RespondentExperience form={form} preview />);
 }

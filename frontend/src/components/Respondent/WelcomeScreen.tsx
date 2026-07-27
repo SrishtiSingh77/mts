@@ -2,6 +2,7 @@
 
 import { Clock, Users } from "lucide-react";
 
+import { welcomeHeadline } from "@/lib/labels";
 import { accentOf, themeStyles } from "@/lib/theme";
 import { Form } from "@/types";
 import PoweredByFooter from "./PoweredByFooter";
@@ -17,7 +18,7 @@ export default function WelcomeScreen({ form, onStart }: WelcomeScreenProps) {
   const minutes = Math.max(1, Math.round(questionCount * 0.25));
 
   // Blank welcome copy falls back to the form's own title and description.
-  const title = form.welcome.title.trim() || form.title;
+  const title = welcomeHeadline(form);
   const description = form.welcome.description.trim() || form.description || "";
 
   return (
